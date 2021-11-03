@@ -1,0 +1,54 @@
+{
+	"name": "Discourse",
+	"commands": [
+		"std:test-connection",
+		"std:account:list"
+	],
+	"sourceConfig": [
+		{
+			"name": "apiKey",
+			"type": "password",
+			"label": "API Key",
+			"required": true
+		},
+		{
+			"name": "apiUsername",
+			"type": "string",
+			"label": "API Username",
+			"required": true
+		},
+		{
+			"name": "baseUrl",
+			"type": "string",
+			"label": "Base URL of the Discourse instance",
+			"required": true
+		}
+	],
+	"accountSchema":{
+		"displayAttribute": "username",
+		"identityAttribute": "id",
+		"attributes":[
+			{
+				"name": "username",
+				"type": "string",
+				"description": "The username of the account"
+			},
+			{
+				"name": "id",
+				"type": "int",
+				"description": "The unique identifier of the account"
+			},
+			{
+				"name": "email",
+				"type": "string",
+				"description": "Email address of the account"
+			},
+			{
+				"name": "title",
+				"type": "string",
+				"description": "The title of the user account"
+			}
+		]
+	},
+  "entitlementSchemas": []
+}
