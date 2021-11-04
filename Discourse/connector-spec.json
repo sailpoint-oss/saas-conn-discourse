@@ -2,7 +2,8 @@
 	"name": "Discourse",
 	"commands": [
 		"std:test-connection",
-		"std:account:list"
+		"std:account:list",
+		"std:account:read"
 	],
 	"sourceConfig": [
 		{

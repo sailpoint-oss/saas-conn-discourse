@@ -9,7 +9,6 @@ import {
     StdTestConnectionOutput,
 } from '@sailpoint/connector-sdk'
 import { DiscourseClient } from './discourse-client'
-import { User } from './model/user'
 
 // Connector must be exported as module property named connector
 export const connector = async () => {
@@ -41,15 +40,16 @@ export const connector = async () => {
             }
         })
         .stdAccountRead(async (context: Context, input: StdAccountReadInput, res: Response<StdAccountReadOutput>) => {
-            const account = await discourseClient.getAccount(input.identity)
+            const user = await discourseClient.getUser(input.identity)
 
             res.send({
-                identity: account.username,
-                uuid: account.id,
+                identity: user.username!,
+                uuid: user.id!.toString(),
                 attributes: {
-                    firstName: account.firstName,
-                    lastName: account.lastName,
-                    email: account.email,
+                    username: user.username!,
+                    id: user.id!,
+                    email: user.email!,
+                    title: user.title!
                 },
             })
         })

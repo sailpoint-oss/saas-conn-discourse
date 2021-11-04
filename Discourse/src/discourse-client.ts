@@ -2,30 +2,6 @@ import { ConnectorError } from "@sailpoint/connector-sdk"
 import axios, { AxiosInstance } from "axios"
 import { User } from "./model/user"
 
-const MOCK_DATA = new Map([
-    [
-        'john.doe',
-        {
-            id: '1',
-            username: 'john.doe',
-            firstName: 'john',
-            lastName: 'doe',
-            email: 'john.doe@example.com',
-        },
-    ],
-    [
-        'jane.doe',
-        {
-            id: '2',
-            username: 'jane.doe',
-            firstName: 'jane',
-            lastName: 'doe',
-            email: 'jane.doe@example.com',
-        },
-    ],
-])
-
-
 export class DiscourseClient {
     private readonly apiKey?: string
     private readonly apiUsername?: string
@@ -81,10 +57,14 @@ export class DiscourseClient {
         return users
     }
 
-    async getAccount(identity: string): Promise<any> {
-        // In a real use case, this requires a HTTP call out to SaaS app to fetch an account,
-        // which is why it's good practice for this to be async and return a promise.
-        return MOCK_DATA.get(identity)
+    async getUser(identity: string): Promise<any> {
+        let response = await this.httpClient.get<User>(`/admin/users/${identity}.json`)
+
+        if (response.data == null) {
+            throw new ConnectorError('Failed to retrieve user ${identity}')
+        } else {
+            return response.data
+        }
     }
 
     async testConnection(): Promise<any> {

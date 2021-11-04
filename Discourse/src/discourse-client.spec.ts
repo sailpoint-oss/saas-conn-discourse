@@ -1,37 +1,50 @@
 import { ConnectorError, StandardCommand } from '@sailpoint/connector-sdk'
 import { DiscourseClient } from './discourse-client'
+import { User } from './model/user'
+import axios from 'axios'
 
-const mockConfig: any = {
-    token: 'xxx123'
-}
+jest.mock('axios')
+const mockedAxios = axios as jest.Mocked<typeof axios>
+let discourseClient = new DiscourseClient({apiKey: 'company', apiUsername: 'apiKey', baseUrl: 'baseUrl'})
+discourseClient.httpClient = mockedAxios
 
-describe('connector client unit tests', () => {
+let userIdentity = 1
+let user = new User()
+user.id = userIdentity
+user.username = 'john.doe'
+user.title = 'admin'
+user.email = 'john.doe@test.com'
 
-    const discourseClient = new DiscourseClient(mockConfig)
+// let roleIdentity = '456'
+// let role = new Role()
+// role.id = 456
+// role.name = 'Engineer'
+// role.description = 'Engineering role'
 
-    it('connector client list accounts', async () => {
-        let allAccounts = await discourseClient.getAllAccounts()
-        expect(allAccounts.length).toStrictEqual(2)
-    })
+describe('test happy paths', () => {
+    it('test connection', async () => {
+        mockedAxios.get.mockResolvedValueOnce({})
 
-    it('connector client get account', async () => {
-        let account = await discourseClient.getAccount('john.doe')
-        expect(account.username).toStrictEqual('john.doe')
-    })
+        let res = await discourseClient.testConnection()
 
-    it('connector client test connection', async () => {
-        expect(await discourseClient.testConnection()).toStrictEqual({})
-    })
+        expect(res).toStrictEqual({})
+	})
 
-    it('connector client test connection', async () => {
-        expect(await discourseClient.testConnection()).toStrictEqual({})
-    })
+    it('get users', async () => {
+        mockedAxios.get.mockResolvedValueOnce({data: [user]})
+        
+        let res = await discourseClient.getUsers()
 
-    it('invalid connector client', async () => {
-        try {
-            new DiscourseClient({})
-        } catch (e) {
-            expect(e instanceof ConnectorError).toBeTruthy()
-        }
-    })
+        expect(res.length).toBe(1)
+        expect(res).toStrictEqual([user])
+	})
+
+    it('get user', async () => {
+        mockedAxios.get.mockResolvedValueOnce({data: user})
+        
+        let res = await discourseClient.getUser(userIdentity.toString())
+
+        expect(res).toStrictEqual(user)
+	})
+
 })
