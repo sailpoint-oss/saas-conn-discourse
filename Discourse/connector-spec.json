@@ -3,7 +3,9 @@
 	"commands": [
 		"std:test-connection",
 		"std:account:list",
-		"std:account:read"
+		"std:account:read",
+		"std:entitlement:list",
+		"std:entitlement:read"
 	],
 	"sourceConfig": [
 		{

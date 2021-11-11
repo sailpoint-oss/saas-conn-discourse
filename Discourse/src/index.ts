@@ -6,6 +6,9 @@ import {
     StdAccountListOutput,
     StdAccountReadInput,
     StdAccountReadOutput,
+    StdEntitlementListOutput,
+    StdEntitlementReadOutput,
+    StdEntitlementReadInput,
     StdTestConnectionOutput,
 } from '@sailpoint/connector-sdk'
 import { DiscourseClient } from './discourse-client'
@@ -28,7 +31,7 @@ export const connector = async () => {
 
             for (const user of users) {
                 res.send({
-                    identity: user.username!,
+                    identity: user.id!.toString(),
                     uuid: user.id!.toString(),
                     attributes: {
                         username: user.username!,
@@ -43,13 +46,41 @@ export const connector = async () => {
             const user = await discourseClient.getUser(input.identity)
 
             res.send({
-                identity: user.username!,
+                identity: user.id!.toString(),
                 uuid: user.id!.toString(),
                 attributes: {
                     username: user.username!,
                     id: user.id!,
                     email: user.email!,
                     title: user.title!
+                },
+            })
+        })
+        .stdEntitlementList(async (context: Context, input: undefined, res: Response<StdEntitlementListOutput>) => {
+            const groups = await discourseClient.getGroups()
+
+            for (const group of groups) {
+                res.send({
+                    identity: group.name!,
+                    uuid: group.id!.toString(),
+                    attributes: {
+                        name: group.name!,
+                        id: group.id!,
+                        display_name: group.display_name!
+                    },
+                })
+            }
+        })
+        .stdEntitlementRead(async (context: Context, input: StdEntitlementReadInput, res: Response<StdEntitlementReadOutput>) => {
+            const group = await discourseClient.getGroup(input.identity)
+
+            res.send({
+                identity: group.name!,
+                uuid: group.id!.toString(),
+                attributes: {
+                    name: group.name!,
+                    id: group.id!,
+                    display_name: group.display_name!
                 },
             })
         })

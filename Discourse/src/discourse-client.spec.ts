@@ -42,9 +42,34 @@ describe('test happy paths', () => {
     it('get user', async () => {
         mockedAxios.get.mockResolvedValueOnce({data: user})
         
-        let res = await discourseClient.getUser(userIdentity.toString())
+        let res = await discourseClient.getUser(userIdentity)
 
         expect(res).toStrictEqual(user)
 	})
 
+})
+
+describe('test exception', () => {
+	it('create client with invalid config', async () => {
+        try {
+            new DiscourseClient({apiKey: 'apiKey'})
+		} catch (e) {
+			expect(e instanceof ConnectorError).toBeTruthy()
+		}
+
+        try {
+            new DiscourseClient({apiUsername: 'apiUsername'})
+		} catch (e) {
+			expect(e instanceof ConnectorError).toBeTruthy()
+		}
+	})
+
+	it('list user with invalid result', async () => {
+        try {
+            mockedAxios.get.mockResolvedValueOnce({data: {}})
+            await discourseClient.getUsers()
+		} catch (e) {
+			expect(e instanceof ConnectorError).toBeTruthy()
+		}
+	})
 })
