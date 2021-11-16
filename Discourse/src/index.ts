@@ -37,7 +37,8 @@ export const connector = async () => {
                         username: user.username!,
                         id: user.id!,
                         email: user.email!,
-                        title: user.title!
+                        title: user.title!,
+                        groups: user.groups!.map(group => { return group.name! })
                     },
                 })
             }
@@ -52,7 +53,8 @@ export const connector = async () => {
                     username: user.username!,
                     id: user.id!,
                     email: user.email!,
-                    title: user.title!
+                    title: user.title!,
+                    groups: user.groups!.map(group => { return group.name! })
                 },
             })
         })
@@ -66,7 +68,6 @@ export const connector = async () => {
                     attributes: {
                         name: group.name!,
                         id: group.id!,
-                        display_name: group.display_name!
                     },
                 })
             }
@@ -80,7 +81,6 @@ export const connector = async () => {
                 attributes: {
                     name: group.name!,
                     id: group.id!,
-                    display_name: group.display_name!
                 },
             })
         })

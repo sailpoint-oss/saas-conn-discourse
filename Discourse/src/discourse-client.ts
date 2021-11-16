@@ -4,6 +4,8 @@ import { User } from "./model/user"
 import { Group } from "./model/group"
 import { GroupListResponse } from "./model/group-list-response"
 import { GroupResponse } from "./model/group-response"
+import { GroupMembers } from "./model/group-members"
+import { UserEmail } from "./model/user-email"
 
 /**
  * DiscourseClient is the client that communicates with Discourse APIs.
@@ -12,6 +14,7 @@ export class DiscourseClient {
     private readonly apiKey?: string
     private readonly apiUsername?: string
     private readonly baseUrl?: string
+    private readonly primaryGroup?: string
     httpClient: AxiosInstance
 
     constructor(config: any) {
@@ -29,6 +32,11 @@ export class DiscourseClient {
         this.baseUrl = config?.baseUrl
         if (this.baseUrl == null) {
             throw new ConnectorError('baseUrl must be provided from config')
+        }
+
+        this.primaryGroup = config?.primaryGroup
+        if (this.primaryGroup == null) {
+            throw new ConnectorError('primaryGroup must be provided from config')
         }
 
         this.httpClient = axios.create({
@@ -54,28 +62,82 @@ export class DiscourseClient {
 	 * List all users with pagination.
 	 * @returns a list of users.
 	 */
-    async getUsers(): Promise<User[]> {
-        let page:number = 1
-        let hasMorePages:boolean = true
-        let users:User[] = []
+    // async getUsers(): Promise<User[]> {
+    //     let page:number = 1
+    //     let hasMorePages:boolean = true
+    //     let users:User[] = []
         
-        while (hasMorePages) {
-            let response = await this.httpClient.get<User[]>('/admin/users/list/staff.json', {
+    //     while (hasMorePages) {
+    //         let response = await this.httpClient.get<User[]>('/admin/users/list/staff.json', {
+    //             params: {
+    //                 page: page,
+    //                 show_emails: true
+    //             }
+    //         })
+
+    //         if (response.status !== 200) {
+    //             throw new ConnectorError('Failed to retrieve list of users')
+    //         } else {
+    //             users = users.concat(response.data);
+    //             response.data.length > 0 ? page += 1 : hasMorePages = false
+    //         }
+    //     }
+        
+    //     return users
+    // }
+
+    async getUsers(): Promise<User[]> {
+        // First, get the members of the group.  This will return a subset of the fields we need to complete a user.
+        const groupMembers = await this.getGroupMembers(this.primaryGroup!)
+
+        // Get the full user representation
+        let users = await Promise.all(groupMembers.map(member => this.getUser(member.id!.toString())))
+
+        // Emails aren't included in the above call.  Need to get each user's email address from a different endpoint.
+        const emails = await Promise.all(groupMembers.map(member => this.getUserEmailAddress(member.username!)))
+        
+        // Add each email address to the full user representation
+        for (let i = 0; i < groupMembers.length; i++) {
+            users[i].email = emails[i]
+        }
+
+        return users
+    }
+
+    private async getGroupMembers(groupname: string): Promise<User[]> {
+        let offset = 0
+        let total = 1 // Set total to 1 until we get the actual total from the first call
+        let limit = 5
+        let members:User[] = []
+
+        while (offset < total) {
+            let response = await this.httpClient.get<GroupMembers>(`/groups/${groupname}/members.json`, {
                 params: {
-                    page: page,
-                    show_emails: true
+                    offset: offset,
+                    limit: limit
                 }
             })
 
             if (response.status !== 200) {
-                throw new ConnectorError('Failed to retrieve list of users')
+                throw new ConnectorError(`Failed to retrieve members for group ${groupname}`)
             } else {
-                users = users.concat(response.data);
-                response.data.length > 0 ? page += 1 : hasMorePages = false
+                members = members.concat(response.data.members!);
+                total = response.data.meta!.total
+                offset += limit
             }
         }
-        
-        return users
+
+        return members
+    }
+
+    private async getUserEmailAddress(username: string): Promise<string> {
+        let response = await this.httpClient.get<UserEmail>(`/u/${username}/emails.json`)
+
+        if (response.status !== 200) {
+            throw new ConnectorError(`Failed to retrieve email for user ${username}`)
+        } else {
+            return response.data.email!
+        }
     }
 
     /**
@@ -83,13 +145,17 @@ export class DiscourseClient {
 	 * @param identity the numeric ID of the user represented as a string.
 	 * @returns the agent.
 	 */
-    async getUser(identity: string): Promise<any> {
-        let response = await this.httpClient.get<User>(`/admin/users/${identity}.json`)
+    async getUser(identity: string): Promise<User> {
+        const userResponse = await this.httpClient.get<User>(`/admin/users/${identity}.json`)
 
-        if (response.status !== 200) {
-            throw new ConnectorError('Failed to retrieve user ${identity}')
+        let user = null
+
+        if (userResponse.status !== 200) {
+            throw new ConnectorError(`Failed to retrieve user ${identity}`)
         } else {
-            return response.data
+            user = userResponse.data
+            user.email = await this.getUserEmailAddress(user.username!)
+            return user
         }
     }
 

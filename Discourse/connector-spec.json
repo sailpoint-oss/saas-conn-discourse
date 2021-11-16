@@ -25,12 +25,19 @@
 			"type": "string",
 			"label": "Base URL of the Discourse instance",
 			"required": true
+		},
+		{
+			"name": "primaryGroup",
+			"type": "string",
+			"label": "The primary group that contains the users to be managed by this connector.",
+			"required": true
 		}
 	],
-	"accountSchema":{
+	"accountSchema": {
 		"displayAttribute": "username",
 		"identityAttribute": "id",
-		"attributes":[
+		"groupAttribute": "groups",
+		"attributes": [
 			{
 				"name": "username",
 				"type": "string",
@@ -50,8 +57,34 @@
 				"name": "title",
 				"type": "string",
 				"description": "The title of the user account"
+			},
+			{
+				"name": "groups",
+				"type": "string",
+				"entitlement": true,
+				"managed": true,
+				"multi": true,
+				"description": "The groups the user belongs to"
 			}
 		]
 	},
-  "entitlementSchemas": []
+	"entitlementSchemas": [
+		{
+			"type": "group",
+			"displayAttribute": "name",
+			"identityAttribute": "id",
+			"attributes": [
+				{
+					"name": "id",
+					"type": "int",
+					"description": "Unique ID of the group"
+				},
+				{
+					"name": "name",
+					"type": "string",
+					"description": "Name of the group"
+				}
+			]
+		}
+	]
 }
