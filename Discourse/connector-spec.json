@@ -10,28 +10,34 @@
 	],
 	"sourceConfig": [
 		{
-			"name": "apiKey",
-			"type": "password",
-			"label": "API Key",
-			"required": true
-		},
-		{
-			"name": "apiUsername",
-			"type": "string",
-			"label": "API Username",
-			"required": true
-		},
-		{
-			"name": "baseUrl",
-			"type": "string",
-			"label": "Base URL of the Discourse instance",
-			"required": true
-		},
-		{
-			"name": "primaryGroup",
-			"type": "string",
-			"label": "The primary group that contains the users to be managed by this connector.",
-			"required": true
+			"sectionTitle": "Base Configuration",
+			"type": "section",
+			"items": [
+				{
+					"name": "apiKey",
+					"type": "password",
+					"label": "API Key",
+					"required": true
+				},
+				{
+					"name": "apiUsername",
+					"type": "string",
+					"label": "API Username",
+					"required": true
+				},
+				{
+					"name": "baseUrl",
+					"type": "string",
+					"label": "Base URL of the Discourse instance",
+					"required": true
+				},
+				{
+					"name": "primaryGroup",
+					"type": "string",
+					"label": "The primary group that contains the users to be managed by this connector.",
+					"required": true
+				}
+			]
 		}
 	],
 	"accountSchema": {
