@@ -6,7 +6,6 @@ import { Group } from "./group"
 export class User {
     id?: number
     username?: string
-    name?: string
     email?: string
     active?: boolean
     admin?: boolean

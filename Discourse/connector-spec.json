@@ -2,8 +2,9 @@
 	"name": "Discourse",
 	"commands": [
 		"std:test-connection",
-		"std:account:list",
+		"std:account:create",
 		"std:account:read",
+		"std:account:list",
 		"std:entitlement:list",
 		"std:entitlement:read"
 	],
@@ -35,7 +36,7 @@
 	],
 	"accountSchema": {
 		"displayAttribute": "username",
-		"identityAttribute": "id",
+		"identityAttribute": "email",
 		"groupAttribute": "groups",
 		"attributes": [
 			{
@@ -86,5 +87,27 @@
 				}
 			]
 		}
-	]
+	],
+	"accountCreateTemplate":{
+		"fields":[
+			{
+				"name": "email",
+				"type": "string",
+				"identityAttribute": "email",
+				"required": true
+			},
+			{
+				"name": "username",
+				"type": "string",
+				"identityAttribute": "username",
+				"required": true
+			},
+			{
+				"name": "title",
+				"type": "string",
+				"identityAttribute": "title",
+				"required": true
+			}
+		]
+	}
 }
