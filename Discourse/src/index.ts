@@ -5,10 +5,12 @@ import {
     readConfig,
     Response,
     StdAccountCreateInput,
-	StdAccountCreateOutput,
+    StdAccountCreateOutput,
     StdAccountListOutput,
     StdAccountReadInput,
     StdAccountReadOutput,
+    StdAccountUpdateInput,
+    StdAccountUpdateOutput,
     StdEntitlementListOutput,
     StdEntitlementReadOutput,
     StdEntitlementReadInput,
@@ -32,6 +34,8 @@ export const connector = async () => {
             res.send(await discourseClient.testConnection())
         })
         .stdAccountCreate(async (context: Context, input: StdAccountCreateInput, res: Response<StdAccountCreateOutput>) => {
+            console.log("123DiscourseTest456")
+            console.log(input)
             const user = await discourseClient.createUser(accountToUser(input))
             res.send(userToAccount(user))
         })
@@ -76,9 +80,11 @@ export const connector = async () => {
 }
 
 const accountToUser = (input: any): User => {
-	if (input.identity == null) {
-		throw new ConnectorError(`'identity' is required to create user`)
-	}
+    if (input.identity == null) {
+        throw new ConnectorError(`'identity' is required to create user`)
+    } else if (input.attributes.username == null) {
+        throw new ConnectorError(`'username' is required to create user`)
+    }
 
     let userGroups: Group[] = []
     if (input.attributes['groups'] != null) {
@@ -90,7 +96,7 @@ const accountToUser = (input: any): User => {
             if (typeof group !== 'string') {
                 throw new ConnectorError('Invalid role type: ' + group)
             }
-    
+
             let groupParts = group.split(':')
             if (groupParts.length != 2) {
                 throw new ConnectorError('Invalid role format: ' + group)
@@ -102,14 +108,15 @@ const accountToUser = (input: any): User => {
             userGroups.push(userGroup)
         }
     }
-		
-	let user = new User()
+
+    let user = new User()
     user.email = input.identity
-    user.username = input.attributes['username']
-    user.title = input.attributes['title']
+    user.username = input.attributes.username
+    user.title = input.attributes.title
+    user.password = input.attributes.password
     user.groups = userGroups
 
-	return user
+    return user
 }
 
 const userToAccount = (user: User): any => {

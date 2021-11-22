@@ -72,7 +72,7 @@ export class DiscourseClient {
         const response = await this.httpClient.post<any>('/users.json', {
             name: user.username, // name doesn't work in discourse, so just use username
             email: user.email,
-            password: cryptoRandomString({length: 20, type: 'base64'}),
+            password: user.password != null ? user.password : cryptoRandomString({length: 20, type: 'base64'}),
             username: user.username,
             active: true,
             approved: true

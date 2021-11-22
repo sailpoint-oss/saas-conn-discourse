@@ -5,6 +5,7 @@
 		"std:account:create",
 		"std:account:read",
 		"std:account:list",
+		"std:account:update",
 		"std:entitlement:list",
 		"std:entitlement:read"
 	],
@@ -14,27 +15,30 @@
 			"type": "section",
 			"items": [
 				{
-					"name": "apiKey",
-					"type": "password",
+					"key": "apiKey",
+					"type": "text",
 					"label": "API Key",
 					"required": true
 				},
 				{
-					"name": "apiUsername",
-					"type": "string",
+					"key": "apiUsername",
+					"type": "text",
 					"label": "API Username",
 					"required": true
 				},
 				{
-					"name": "baseUrl",
-					"type": "string",
-					"label": "Base URL of the Discourse instance",
+					"key": "baseUrl",
+					"type": "text",
+					"label": "Base URL",
+					"helpText": "Base URL of the Discourse instance",
+					"placeholder": "https://mydomain.com",
 					"required": true
 				},
 				{
-					"name": "primaryGroup",
-					"type": "string",
-					"label": "The primary group that contains the users to be managed by this connector.",
+					"key": "primaryGroup",
+					"type": "text",
+					"label": "Primary Group",
+					"helpText": "The primary group that contains the users to be managed by this connector.",
 					"required": true
 				}
 			]
@@ -105,14 +109,20 @@
 			{
 				"name": "username",
 				"type": "string",
-				"identityAttribute": "username",
+				"identityAttribute": "uid",
 				"required": true
+			},
+			{
+				"name": "password",
+				"type": "string",
+				"identityAttribute": "",
+				"required": false
 			},
 			{
 				"name": "title",
 				"type": "string",
-				"identityAttribute": "title",
-				"required": true
+				"identityAttribute": "",
+				"required": false
 			}
 		]
 	}

@@ -12,5 +12,6 @@ export class User {
     moderator?: boolean
     trust_level?: number
     title?: string
+    password?: string
     groups?: Group[]
 }
