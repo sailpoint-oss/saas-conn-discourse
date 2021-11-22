@@ -8,8 +8,8 @@ import { GroupMembers } from "./model/group-members"
 import { UserEmail } from "./model/user-email"
 import { UserUpdateResponse } from "./model/user-update-response"
 import { UserUpdate } from "./model/user-update"
-import cryptoRandomString from 'crypto-random-string'
 
+let randomString = require("random-string")
 let FormData = require("form-data")
 
 /**
@@ -72,7 +72,7 @@ export class DiscourseClient {
         const response = await this.httpClient.post<any>('/users.json', {
             name: user.username, // name doesn't work in discourse, so just use username
             email: user.email,
-            password: user.password != null ? user.password : cryptoRandomString({length: 20, type: 'base64'}),
+            password: user.password != null ? user.password : randomString({length: 20, numeric: true, letters: true, special: false}),
             username: user.username,
             active: true,
             approved: true

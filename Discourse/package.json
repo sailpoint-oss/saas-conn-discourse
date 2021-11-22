@@ -17,7 +17,7 @@
     "@sailpoint/connector-sdk": "github:sailpoint/saas-connector-sdk-js#main",
     "axios": "^0.24.0",
     "form-data": "^4.0.0",
-    "crypto-random-string": "^4.0.0"
+    "random-string": "^0.2.0"
   },
   "devDependencies": {
     "@types/jest": "^27.0.2",
