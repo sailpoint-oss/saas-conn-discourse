@@ -1,5 +1,6 @@
 import { ConnectorError } from "@sailpoint/connector-sdk"
 import axios, { AxiosInstance } from "axios"
+import axiosRetry from "axios-retry"
 import { User } from "./model/user"
 import { Group } from "./model/group"
 import { GroupListResponse } from "./model/group-list-response"
@@ -8,6 +9,7 @@ import { GroupMembers } from "./model/group-members"
 import { UserEmail } from "./model/user-email"
 import { UserUpdateResponse } from "./model/user-update-response"
 import { UserUpdate } from "./model/user-update"
+import { UserUsernameResponse } from "./model/user-username-response"
 
 let randomString = require("random-string")
 let FormData = require("form-data")
@@ -51,6 +53,15 @@ export class DiscourseClient {
                 'Api-Username': this.apiUsername
             }
         })
+
+        axiosRetry(this.httpClient, {
+            retryDelay: () => {
+                return 30000
+            },
+            retryCondition: (error) => {
+                return error.response!.status === 429
+            }
+        })
     }
 
     /**
@@ -72,32 +83,33 @@ export class DiscourseClient {
         const response = await this.httpClient.post<any>('/users.json', {
             name: user.username, // name doesn't work in discourse, so just use username
             email: user.email,
-            password: user.password != null ? user.password : randomString({length: 20, numeric: true, letters: true, special: false}),
+            password: user.password != null ? user.password : randomString({ length: 20, numeric: true, letters: true, special: false }),
             username: user.username,
             active: true,
             approved: true
         }).catch(error => {
-            throw new ConnectorError(`Failed to create user ${user.username}`)
+            throw new ConnectorError(`Failed to create user ${user.username}: ${error}`)
         })
 
+        const createdUser = await this.getUserByUsername(user.username!)
+
+        let updateData = new UserUpdate()
+        updateData.groups = createdUser.groups // Populate udpateData with default groups assigned to new users
         if (user.groups != null) {
-            await Promise.all(user.groups.map(group => this.addUserToGroup(group.id!, user.username!)))
+            updateData.groups?.concat(user.groups)
         }
-
         if (user.title != null) {
-            await this.updateUser(user.username!, user)
+            updateData.title = user.title
         }
 
-        const createdUser = await this.getUser(response.data.user_id)
-
-        return createdUser
+        return await this.updateUser(user.username!, createdUser, updateData)
     }
 
     async getUsers(): Promise<User[]> {
         // First, get the members of the group.  This will return a subset of the fields we need to complete a user.
         const groupMembers = await this.getGroupMembers(this.primaryGroup!)
 
-        // Get the full user representation
+        // Get the full user representation.
         let users = await Promise.all(groupMembers.map(member => this.getUser(member.id!.toString())))
 
         // Emails aren't included in the above call.  Need to get each user's email address from a different endpoint.
@@ -155,38 +167,64 @@ export class DiscourseClient {
         return true
     }
 
+    private async removeUserFromGroup(groupId: number, userId: string): Promise<boolean> {
+        const response = await this.httpClient.delete<any>(`/admin/users/${userId}/groups/${groupId}`)
+            .catch(error => {
+                if (error.response.status !== 422) {
+                    throw new ConnectorError(error)
+                }
+            })
+
+        return true
+    }
+
 
     /**
-	 * update a user by username.
-	 * @param username the username of the user.
-     * @param user the user data to be updated
-	 * @returns the updated user.
-	 */
-	async updateUser(username: string, user: User): Promise<User> {
-		let userUpdate = UserUpdate.fromUser(user)
+     * update a user by username.
+     * @param username the username of the user.
+     * @param origUser the original user before the update.
+     * @param newUser the user data to be updated.
+     * @returns the updated user.
+     */
+    async updateUser(username: string, origUser: User, newUser: User): Promise<User> {
+        const userUpdate = UserUpdate.fromUser(newUser)
         let data = new FormData()
         for (let key in userUpdate) {
-            if ((userUpdate as any)[key] != null) {
+            if (key !== 'groups' && (userUpdate as any)[key] != null) {
                 data.append(key, (userUpdate as any)[key])
             }
         }
 
-		let response = await this.httpClient.put<UserUpdateResponse>(`/u/${username}.json`, userUpdate)
-        if (response.data.user == null){
-			throw new ConnectorError('Failed to update user.')
-		}
+        const response = await this.httpClient.put<UserUpdateResponse>(`/u/${username}.json`, userUpdate)
+        if (response.data.user == null) {
+            throw new ConnectorError('Failed to update user.')
+        }
 
-		return response.data.user
-	}
+        // Remove any groups that are not contained in the userUpdate object
+        const origUserGroupIds = origUser.groups?.map(group => { return group.id })
+        const userUpdateGroupIds = userUpdate.groups?.map(group => { return group.id })
+        const groupsToRemove = origUserGroupIds!.filter(x => !userUpdateGroupIds!.includes(x))
+        if (groupsToRemove != null && groupsToRemove.length > 0) {
+            await Promise.all(groupsToRemove.map(id => this.removeUserFromGroup(id!, origUser.id!.toString())))
+        }
+
+        // Add any groups that are not contained in the origUser object
+        const groupsToAdd = userUpdateGroupIds!.filter(x => !origUserGroupIds!.includes(x))
+        if (groupsToAdd != null && groupsToAdd.length > 0) {
+            await Promise.all(groupsToAdd.map(id => this.addUserToGroup(id!, username)))
+        }
+
+        return await this.getUser(origUser.id!.toString())
+    }
 
     /**
      * Retrieve a single user by identity.
      * @param identity the numeric ID of the user represented as a string.
-     * @returns the agent.
+     * @returns the user.
      */
     async getUser(identity: string): Promise<User> {
         const userResponse = await this.httpClient.get<User>(`/admin/users/${identity}.json`).catch(error => {
-            throw new ConnectorError(`Failed to retrieve user ${identity}`)
+            throw new ConnectorError(`Failed to retrieve user ${identity}: Error ${error}`)
         })
 
         let user = null
@@ -194,6 +232,23 @@ export class DiscourseClient {
         user.email = await this.getUserEmailAddress(user.username!)
         return user
     }
+
+     /**
+     * Retrieve a single user by username.
+     * @param username the username of the user
+     * @returns the user.
+     */
+      async getUserByUsername(username: string): Promise<User> {
+        const userResponse = await this.httpClient.get<UserUsernameResponse>(`/u/${username}.json`).catch(error => {
+            throw new ConnectorError(`Failed to retrieve user ${username}: Error ${error}`)
+        })
+
+        let user = null
+        user = userResponse.data.user!
+        user.email = await this.getUserEmailAddress(user.username!)
+        return user
+    }
+  
 
     /**
      * List groups with pagination

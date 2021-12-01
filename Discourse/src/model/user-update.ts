@@ -1,3 +1,4 @@
+import { Group } from "./group"
 import { User } from "./user"
 
 /**
@@ -10,6 +11,7 @@ export class UserUpdate {
     moderator?: boolean
     trust_level?: number
     title?: string
+    groups?: Group[]
 
     /**
      * Create UserUpdate from User.
@@ -25,6 +27,7 @@ export class UserUpdate {
 		update.moderator = user.moderator
 		update.trust_level = user.trust_level
 		update.title = user.title
+        update.groups = user.groups
 		
 		return update
 	}

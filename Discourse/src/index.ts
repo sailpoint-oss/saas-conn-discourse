@@ -15,10 +15,12 @@ import {
     StdEntitlementReadOutput,
     StdEntitlementReadInput,
     StdTestConnectionOutput,
+    AttributeChangeOp
 } from '@sailpoint/connector-sdk'
 import { DiscourseClient } from './discourse-client'
 import { Group } from './model/group'
 import { User } from './model/user'
+import { UserUpdate } from './model/user-update'
 
 // Connector must be exported as module property named connector
 export const connector = async () => {
@@ -34,8 +36,7 @@ export const connector = async () => {
             res.send(await discourseClient.testConnection())
         })
         .stdAccountCreate(async (context: Context, input: StdAccountCreateInput, res: Response<StdAccountCreateOutput>) => {
-            console.log("123DiscourseTest456")
-            console.log(input)
+            console.log(`123DiscourseTest456`)
             const user = await discourseClient.createUser(accountToUser(input))
             res.send(userToAccount(user))
         })
@@ -51,38 +52,79 @@ export const connector = async () => {
 
             res.send(userToAccount(user))
         })
+        .stdAccountUpdate(async (context: Context, input: StdAccountUpdateInput, res: Response<StdAccountUpdateOutput>) => {
+            const origUser = await discourseClient.getUser(input.identity)
+            let account = userToAccount(origUser)
+    
+            input.changes.forEach(c => {
+                switch (c.op) {
+                    case AttributeChangeOp.Add:
+                        if (account.attributes[c.attribute] == null) {
+                            account.attributes[c.attribute] = c.value
+                        } else {
+                            if (c.attribute != 'groups') {
+                                throw new ConnectorError('Cannot add value to attribute: ' + c.attribute)
+                            }
+                            
+                            if (Array.isArray(c.value)) {
+                                account.attributes[c.attribute] = account.attributes[c.attribute].concat(c.value)
+                            } else {
+                                account.attributes[c.attribute].push(c.value)
+                            }
+                        }
+                        break
+                    case AttributeChangeOp.Set:
+                        account.attributes[c.attribute] = c.value
+                        break
+                    case AttributeChangeOp.Remove:
+                        if (c.attribute == 'groups') {
+                            if (Array.isArray(c.value)) {
+                                c.value.forEach(v => {
+                                    let i =  account.attributes[c.attribute].indexOf(v, 0)
+                                    if (i > -1) {
+                                        account.attributes[c.attribute].splice(i, 1)
+                                    }
+                                })
+                            } else {
+                                let i = account.attributes[c.attribute].indexOf(c.value, 0)
+                                if (i > -1) {
+                                    account.attributes[c.attribute].splice(i, 1)
+                                }
+                            }
+                        } else if (account.attributes[c.attribute] != null) {
+                            account.attributes[c.attribute] = null
+                        }
+                        break
+                    default:
+                        throw new ConnectorError('Unknown account change op: ' + c.op)
+                }
+            })
+    
+            let preUpdateUser = accountToUser(account)
+            let updatedUser = await discourseClient.updateUser(account.uuid, origUser, preUpdateUser)
+    
+            if (User.equals(preUpdateUser, updatedUser)) {
+                res.send({})
+            } else {
+                res.send(userToAccount(updatedUser))
+            }
+        })
         .stdEntitlementList(async (context: Context, input: undefined, res: Response<StdEntitlementListOutput>) => {
             const groups = await discourseClient.getGroups()
 
             for (const group of groups) {
-                res.send({
-                    identity: group.name!,
-                    uuid: group.id!.toString(),
-                    attributes: {
-                        name: group.name!,
-                        id: group.id!,
-                    },
-                })
+                res.send(groupToEntitlement(group))
             }
         })
         .stdEntitlementRead(async (context: Context, input: StdEntitlementReadInput, res: Response<StdEntitlementReadOutput>) => {
             const group = await discourseClient.getGroup(input.identity)
 
-            res.send({
-                identity: group.name!,
-                uuid: group.id!.toString(),
-                attributes: {
-                    name: group.name!,
-                    id: group.id!,
-                },
-            })
+            res.send(groupToEntitlement(group))
         })
 }
 
 const accountToUser = (input: any): User => {
-    if (input.identity == null) {
-        throw new ConnectorError(`'identity' is required to create user`)
-    } else if (input.attributes.username == null) {
+    if (input.attributes.username == null) {
         throw new ConnectorError(`'username' is required to create user`)
     }
 
@@ -110,7 +152,9 @@ const accountToUser = (input: any): User => {
     }
 
     let user = new User()
-    user.email = input.identity
+    user.email = input.attributes.email
+    // If account create command, identity isn't provided since Discourse creates the ID.
+    user.id = input.identity == null ? -1 : input.identity
     user.username = input.attributes.username
     user.title = input.attributes.title
     user.password = input.attributes.password
@@ -121,7 +165,7 @@ const accountToUser = (input: any): User => {
 
 const userToAccount = (user: User): any => {
     return {
-        identity: user.email,
+        identity: user.id?.toString(),
         uuid: user.username,
         attributes: {
             username: user.username,
@@ -130,5 +174,16 @@ const userToAccount = (user: User): any => {
             title: user.title,
             groups: user.groups!.map(group => { return `${group.id}:${group.name}` })
         }
+    }
+}
+
+const groupToEntitlement = (group: Group): any => {
+    return {
+        identity: group.id + ':' + group.name,
+		uuid: group.id + ':' + group.name,
+		attributes: {
+			id: group.id + ':' + group.name,
+			name: group.name
+		}
     }
 }

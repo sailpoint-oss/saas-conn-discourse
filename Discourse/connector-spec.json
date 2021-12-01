@@ -46,7 +46,7 @@
 	],
 	"accountSchema": {
 		"displayAttribute": "username",
-		"identityAttribute": "email",
+		"identityAttribute": "id",
 		"groupAttribute": "groups",
 		"attributes": [
 			{
@@ -87,13 +87,13 @@
 			"attributes": [
 				{
 					"name": "id",
-					"type": "int",
-					"description": "Unique ID of the group"
+					"type": "string",
+					"description": "Unique ID of the group and its name (ex. 1:admin)"
 				},
 				{
 					"name": "name",
 					"type": "string",
-					"description": "Name of the group"
+					"description": "The name of the group (ex. admin)"
 				}
 			]
 		}
