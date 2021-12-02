@@ -169,7 +169,7 @@ const userToAccount = (user: User): any => {
         uuid: user.username,
         attributes: {
             username: user.username,
-            id: user.id,
+            id: user.id?.toString(),
             email: user.email,
             title: user.title,
             groups: user.groups!.map(group => { return `${group.id}:${group.name}` })

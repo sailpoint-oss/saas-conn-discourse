@@ -95,8 +95,9 @@ export class DiscourseClient {
 
         let updateData = new UserUpdate()
         updateData.groups = createdUser.groups // Populate udpateData with default groups assigned to new users
+        // If the provisioning plan includes groups, add them to the update data.
         if (user.groups != null) {
-            updateData.groups?.concat(user.groups)
+            updateData.groups = updateData.groups!.concat(user.groups)
         }
         if (user.title != null) {
             updateData.title = user.title

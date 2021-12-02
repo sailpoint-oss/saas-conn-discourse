@@ -56,7 +56,7 @@
 			},
 			{
 				"name": "id",
-				"type": "int",
+				"type": "string",
 				"description": "The unique identifier of the account"
 			},
 			{
