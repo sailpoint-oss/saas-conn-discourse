@@ -36,7 +36,7 @@ export const connector = async () => {
             res.send(await discourseClient.testConnection())
         })
         .stdAccountCreate(async (context: Context, input: StdAccountCreateInput, res: Response<StdAccountCreateOutput>) => {
-            console.log(`123DiscourseTest456`)
+            console.log(`Input received for account create: ${JSON.stringify(input)}`)
             const user = await discourseClient.createUser(accountToUser(input))
             res.send(userToAccount(user))
         })
@@ -165,6 +165,7 @@ const accountToUser = (input: any): User => {
 
 const userToAccount = (user: User): any => {
     return {
+        // Convert id to string because IDN doesn't work well with number types for the account ID
         identity: user.id?.toString(),
         uuid: user.username,
         attributes: {
