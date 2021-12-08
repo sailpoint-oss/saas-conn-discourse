@@ -6,6 +6,7 @@
 		"std:account:read",
 		"std:account:list",
 		"std:account:update",
+		"std:account:delete",
 		"std:entitlement:list",
 		"std:entitlement:read"
 	],

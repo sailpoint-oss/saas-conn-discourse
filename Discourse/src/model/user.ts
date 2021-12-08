@@ -25,6 +25,7 @@ export class User {
 		if (a == null || b == null || a.id != b.id || a.username != b.username || a.email != b.email
 			|| a.active != b.active || a.admin != b.admin || a.moderator != b.moderator || a.trust_level != b.trust_level
 			|| a.title != b.title) {
+
 			return false
 		}
 

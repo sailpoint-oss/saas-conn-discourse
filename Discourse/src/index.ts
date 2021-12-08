@@ -11,6 +11,8 @@ import {
     StdAccountReadOutput,
     StdAccountUpdateInput,
     StdAccountUpdateOutput,
+    StdAccountDeleteInput,
+    StdAccountDeleteOutput,
     StdEntitlementListOutput,
     StdEntitlementReadOutput,
     StdEntitlementReadInput,
@@ -20,7 +22,6 @@ import {
 import { DiscourseClient } from './discourse-client'
 import { Group } from './model/group'
 import { User } from './model/user'
-import { UserUpdate } from './model/user-update'
 
 // Connector must be exported as module property named connector
 export const connector = async () => {
@@ -36,7 +37,6 @@ export const connector = async () => {
             res.send(await discourseClient.testConnection())
         })
         .stdAccountCreate(async (context: Context, input: StdAccountCreateInput, res: Response<StdAccountCreateOutput>) => {
-            console.log(`Input received for account create: ${JSON.stringify(input)}`)
             const user = await discourseClient.createUser(accountToUser(input))
             res.send(userToAccount(user))
         })
@@ -103,11 +103,14 @@ export const connector = async () => {
             let preUpdateUser = accountToUser(account)
             let updatedUser = await discourseClient.updateUser(account.uuid, origUser, preUpdateUser)
     
-            if (User.equals(preUpdateUser, updatedUser)) {
+            if (User.equals(origUser, updatedUser)) {
                 res.send({})
             } else {
                 res.send(userToAccount(updatedUser))
             }
+        })
+        .stdAccountDelete(async (context: Context, input: StdAccountDeleteInput, res: Response<StdAccountDeleteOutput>) => {
+            res.send(await discourseClient.deleteUser(input.identity))
         })
         .stdEntitlementList(async (context: Context, input: undefined, res: Response<StdEntitlementListOutput>) => {
             const groups = await discourseClient.getGroups()

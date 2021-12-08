@@ -113,6 +113,16 @@ export class DiscourseClient {
         return await this.updateUser(user.username!, createdUser, updateData)
     }
 
+    /**
+	 * Delete a user by identity.
+	 * @param identity the id of the user.
+	 * @returns empty struct if response is 2XX
+	 */
+	async deleteUser(identity: string): Promise<any> {
+		await this.httpClient.delete(`/admin/users/${identity}.json`)
+		return {}
+	}
+
     async getUsers(): Promise<User[]> {
         // First, get the members of the group.  This will return a subset of the fields we need to complete a user.
         const groupMembers = await this.getGroupMembers(this.primaryGroup!)
