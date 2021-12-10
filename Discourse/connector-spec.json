@@ -7,6 +7,7 @@
 		"std:account:list",
 		"std:account:update",
 		"std:account:delete",
+		"std:account:discover-schema",
 		"std:entitlement:list",
 		"std:entitlement:read"
 	],
@@ -45,41 +46,6 @@
 			]
 		}
 	],
-	"accountSchema": {
-		"displayAttribute": "username",
-		"identityAttribute": "id",
-		"groupAttribute": "groups",
-		"attributes": [
-			{
-				"name": "username",
-				"type": "string",
-				"description": "The username of the account"
-			},
-			{
-				"name": "id",
-				"type": "string",
-				"description": "The unique identifier of the account"
-			},
-			{
-				"name": "email",
-				"type": "string",
-				"description": "Email address of the account"
-			},
-			{
-				"name": "title",
-				"type": "string",
-				"description": "The title of the user account"
-			},
-			{
-				"name": "groups",
-				"type": "string",
-				"entitlement": true,
-				"managed": true,
-				"multi": true,
-				"description": "The groups the user belongs to"
-			}
-		]
-	},
 	"entitlementSchemas": [
 		{
 			"type": "group",

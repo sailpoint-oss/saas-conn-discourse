@@ -123,6 +123,39 @@ export class DiscourseClient {
 		return {}
 	}
 
+    async discoverSchema(): Promise<any> {
+        // Get the first page of active users.  This doesn't contain the full account schema.
+        const users = await this.httpClient.get<[any]>('/admin/users/list/active.json').catch(error => {
+            throw new ConnectorError(`Failed to retrieve users: Error ${error}`)
+        })
+
+        // to get the full account schema, call the single user endpoint
+        const user = await this.httpClient.get<any>(`/admin/users/${users.data[0].id}.json`).catch(error => {
+            throw new ConnectorError(`Failed to retrieve user ${users.data[0].id}: Error ${error}`)
+        })
+
+        const accountSchema = {
+            attributes: <any>[]
+        }
+
+        for (const [key, value] of Object.entries(user.data)) {
+            let type = (typeof value).toString()
+            // Objects can't be represented in account schema
+            if (type !== "object") {
+                // number is not a supported account schema type.  Must convert to long.
+                if (type === "number") {
+                    type = "long"
+                }
+                const attribute = {
+                    name: key,
+                    type: type
+                }
+                accountSchema.attributes.push(attribute)
+            }
+        }
+        return accountSchema
+    }
+
     async getUsers(): Promise<User[]> {
         // First, get the members of the group.  This will return a subset of the fields we need to complete a user.
         const groupMembers = await this.getGroupMembers(this.primaryGroup!)

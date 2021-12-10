@@ -17,7 +17,8 @@ import {
     StdEntitlementReadOutput,
     StdEntitlementReadInput,
     StdTestConnectionOutput,
-    AttributeChangeOp
+    AttributeChangeOp,
+    StdAccountDiscoverSchemaOutput
 } from '@sailpoint/connector-sdk'
 import { DiscourseClient } from './discourse-client'
 import { Group } from './model/group'
@@ -55,7 +56,7 @@ export const connector = async () => {
         .stdAccountUpdate(async (context: Context, input: StdAccountUpdateInput, res: Response<StdAccountUpdateOutput>) => {
             const origUser = await discourseClient.getUser(input.identity)
             let account = userToAccount(origUser)
-    
+
             input.changes.forEach(c => {
                 switch (c.op) {
                     case AttributeChangeOp.Add:
@@ -65,7 +66,7 @@ export const connector = async () => {
                             if (c.attribute != 'groups') {
                                 throw new ConnectorError('Cannot add value to attribute: ' + c.attribute)
                             }
-                            
+
                             if (Array.isArray(c.value)) {
                                 account.attributes[c.attribute] = account.attributes[c.attribute].concat(c.value)
                             } else {
@@ -80,7 +81,7 @@ export const connector = async () => {
                         if (c.attribute == 'groups') {
                             if (Array.isArray(c.value)) {
                                 c.value.forEach(v => {
-                                    let i =  account.attributes[c.attribute].indexOf(v, 0)
+                                    let i = account.attributes[c.attribute].indexOf(v, 0)
                                     if (i > -1) {
                                         account.attributes[c.attribute].splice(i, 1)
                                     }
@@ -99,10 +100,10 @@ export const connector = async () => {
                         throw new ConnectorError('Unknown account change op: ' + c.op)
                 }
             })
-    
+
             let preUpdateUser = accountToUser(account)
             let updatedUser = await discourseClient.updateUser(account.uuid, origUser, preUpdateUser)
-    
+
             if (User.equals(origUser, updatedUser)) {
                 res.send({})
             } else {
@@ -123,6 +124,10 @@ export const connector = async () => {
             const group = await discourseClient.getGroup(input.identity)
 
             res.send(groupToEntitlement(group))
+        })
+        .stdAccountDiscoverSchema(async (context: Context, input: undefined, res: Response<StdAccountDiscoverSchemaOutput>) => {
+            const schema = await discourseClient.discoverSchema()
+            res.send(schema)
         })
 }
 
@@ -184,10 +189,10 @@ const userToAccount = (user: User): any => {
 const groupToEntitlement = (group: Group): any => {
     return {
         identity: group.id + ':' + group.name,
-		uuid: group.id + ':' + group.name,
-		attributes: {
-			id: group.id + ':' + group.name,
-			name: group.name
-		}
+        uuid: group.id + ':' + group.name,
+        attributes: {
+            id: group.id + ':' + group.name,
+            name: group.name
+        }
     }
 }
