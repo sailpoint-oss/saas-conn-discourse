@@ -52,6 +52,11 @@ export const connector = async () => {
 
             res.send(userToAccount(user))
         })
+        .command("std:account:disable", async (context: Context, input: any, res: Response<any>) => {
+            const user = await discourseClient.getUser(input.identity)
+
+            res.send(userToAccount(user))
+        })
         .stdAccountUpdate(async (context: Context, input: StdAccountUpdateInput, res: Response<StdAccountUpdateOutput>) => {
             const origUser = await discourseClient.getUser(input.identity)
             let account = userToAccount(origUser)
