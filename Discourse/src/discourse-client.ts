@@ -68,7 +68,7 @@ export class DiscourseClient {
         const response = await this.httpClient.post<any>('/users.json', {
             name: user.username, // name doesn't work in discourse, so just use username
             email: user.email,
-            password: user.password != null ? user.password : randomString({ length: 20, numeric: true, letters: true, special: false }),
+            password: user.password != null ? user.password : this.generateRandomPassword(),
             username: user.username,
             active: true,
             approved: true
@@ -89,6 +89,10 @@ export class DiscourseClient {
         }
 
         return await this.updateUser(user.username!, createdUser, updateData)
+    }
+
+    generateRandomPassword(): string {
+        return randomString({ length: 20, numeric: true, letters: true, special: false })
     }
 
     /**

@@ -1,6 +1,6 @@
 {
     "/u/test/emails.json": {
-        "email": "test2.test2@test2.com",
+        "email": "test.test@test.com",
         "secondary_emails": [],
         "unconfirmed_emails": [],
         "associated_accounts": [
@@ -17,7 +17,7 @@
         "associated_accounts": [
             {
                 "name": "oidc",
-                "description": "test.test@test.com"
+                "description": "test2.test2@test2.com"
             }
         ]
     }

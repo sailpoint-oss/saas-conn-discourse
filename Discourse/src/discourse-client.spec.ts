@@ -23,10 +23,29 @@ describe('test happy paths', () => {
     expect(res[0].email === 'test.test@test.com')
   })
 
-  it('get user', async () => {
+  it('get user returns correct email', async () => {
     let res = await discourseClient.getUser('100')
 
     expect(res.email === 'test.test@test.com')
+
+    res = await discourseClient.getUser('1305')
+
+    expect(res.email === 'test2.test2@test2.com')
+  })
+
+  it('create user returns correct email', async () => {
+    const spy = jest.spyOn(discourseClient, "generateRandomPassword")
+    let res = await discourseClient.createUser({"email": "", "username": "test", "password": "12345test"})
+    expect(spy).toBeCalledTimes(0);
+    expect(res.email === 'test.test@test.com')
+  })
+
+  it('password is generated when not provided', async () => {
+    const spy = jest.spyOn(discourseClient, "generateRandomPassword")
+    let res = await discourseClient.createUser({"email": "", "username": "test"})
+    expect(spy).toBeCalled();
+    expect(res.email === 'test.test@test.com')
+
   })
 
 })

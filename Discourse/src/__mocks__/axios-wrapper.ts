@@ -6,6 +6,7 @@ import user from "./user.json"
 import userUsername from "./user-username.json"
 import groupResponse from "./group-response.json"
 import dummyResponse from "./dummy-response.json"
+import userUpdateResponse from "./user-update-response.json"
 
 
 export class AxiosWrapper {
@@ -56,9 +57,11 @@ export class AxiosWrapper {
     }
 
     async put<T = any>(url: string, data?: any) {
+        let response = { ...dummyResponse };
+        response.data = userUpdateResponse
         return new Promise((resolve, reject) => {
             process.nextTick(() =>
-                resolve(user)
+                resolve(response)
             );
         });
     }
