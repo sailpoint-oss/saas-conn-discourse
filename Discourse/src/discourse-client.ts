@@ -91,7 +91,7 @@ export class DiscourseClient {
         return await this.updateUser(user.username!, createdUser, updateData)
     }
 
-    generateRandomPassword(): string {
+    private generateRandomPassword(): string {
         return randomString({ length: 20, numeric: true, letters: true, special: false })
     }
 
