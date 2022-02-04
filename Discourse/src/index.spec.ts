@@ -1,7 +1,8 @@
 import { connector } from './index'
-import { StandardCommand } from '@sailpoint/connector-sdk'
+import { StandardCommand, StdAccountUpdateInput } from '@sailpoint/connector-sdk'
 import { PassThrough } from 'stream'
 import { Config } from './model/config'
+import {Util} from './util'
 
 jest.mock('./discourse-client')
 
@@ -26,6 +27,53 @@ describe('connector unit tests', () => {
             {},
             undefined,
             new PassThrough({ objectMode: true }).on('data', (chunk) => expect(chunk).toStrictEqual({}))
+        )
+    })
+
+    it('should execute stdAccountCreate', async () => {
+        await (await connector())._exec(
+            StandardCommand.StdAccountCreate,
+            {},
+            {"attributes": {"username": "test"}},
+            new PassThrough({ objectMode: true }).on('data', (chunk) => expect(chunk.identity).toStrictEqual("1305"))
+        )
+    })
+
+    it('should execute stdAccountList', async () => {
+        await (await connector())._exec(
+            StandardCommand.StdAccountList,
+            {},
+            {"attributes": {"username": "test"}},
+            new PassThrough({ objectMode: true }).on('data', (chunk) => expect(chunk.identity).toStrictEqual("100"))
+        )
+    })
+
+    it('should execute stdAccountRead', async () => {
+        await (await connector())._exec(
+            StandardCommand.StdAccountRead,
+            {},
+            {"attributes": {"username": "test"}},
+            new PassThrough({ objectMode: true }).on('data', (chunk) => expect(chunk.identity).toStrictEqual("1305"))
+        )
+    })
+
+    it('should execute stdAccountUpdate add', async () => {
+        const spy = jest.spyOn(Util.prototype, "accountAdd")
+        await (await connector())._exec(
+            StandardCommand.StdAccountUpdate,
+            {},
+            {"attributes": {"identity": "test"}, "changes": [{"op": "Add","attribute": "", "value": "" }]},
+            new PassThrough({ objectMode: true }).on('data', (chunk) => expect(spy).toBeCalled())
+        )
+    })
+
+    it('should execute stdAccountUpdate remove', async () => {
+        const spy = jest.spyOn(Util.prototype, "accountRemove")
+        await (await connector())._exec(
+            StandardCommand.StdAccountUpdate,
+            {},
+            {"attributes": {"identity": "test"}, "changes": [{"op": "Remove","attribute": "", "value": "" }]},
+            new PassThrough({ objectMode: true }).on('data', (chunk) => expect(spy).toBeCalled())
         )
     })
 })

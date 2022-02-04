@@ -48,6 +48,12 @@ describe('test happy paths', () => {
 
   })
 
+  it('get users populates correct fields', async () => {
+    let res = await discourseClient.deleteUser("")
+
+    expect(res).toStrictEqual({})
+  })
+
 })
 
 describe('test exception', () => {
