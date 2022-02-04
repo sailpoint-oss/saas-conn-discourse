@@ -17,8 +17,7 @@ import {
     StdEntitlementReadOutput,
     StdEntitlementReadInput,
     StdTestConnectionOutput,
-    AttributeChangeOp,
-    AttributeChange
+    AttributeChangeOp
 } from '@sailpoint/connector-sdk'
 import { DiscourseClient } from './discourse-client'
 import { Group } from './model/group'
@@ -41,29 +40,29 @@ export const connector = async () => {
             res.send(await discourseClient.testConnection())
         })
         .stdAccountCreate(async (context: Context, input: StdAccountCreateInput, res: Response<StdAccountCreateOutput>) => {
-            const user = await discourseClient.createUser(accountToUser(input))
-            res.send(userToAccount(user))
+            const user = await discourseClient.createUser(util.accountToUser(input))
+            res.send(util.userToAccount(user))
         })
         .stdAccountList(async (context: Context, input: undefined, res: Response<StdAccountListOutput>) => {
             const users = await discourseClient.getUsers()
 
             for (const user of users) {
-                res.send(userToAccount(user))
+                res.send(util.userToAccount(user))
             }
         })
         .stdAccountRead(async (context: Context, input: StdAccountReadInput, res: Response<StdAccountReadOutput>) => {
             const user = await discourseClient.getUser(input.identity)
 
-            res.send(userToAccount(user))
+            res.send(util.userToAccount(user))
         })
         .command("std:account:disable", async (context: Context, input: any, res: Response<any>) => {
             const user = await discourseClient.getUser(input.identity)
 
-            res.send(userToAccount(user))
+            res.send(util.userToAccount(user))
         })
         .stdAccountUpdate(async (context: Context, input: StdAccountUpdateInput, res: Response<StdAccountUpdateOutput>) => {
             const origUser = await discourseClient.getUser(input.identity)
-            let account = userToAccount(origUser)
+            let account = util.userToAccount(origUser)
     
             input.changes.forEach(c => {
                 switch (c.op) {
@@ -71,7 +70,7 @@ export const connector = async () => {
                         util.accountAdd(account, c)
                         break
                     case AttributeChangeOp.Set:
-                        account.attributes[c.attribute] = c.value
+                        util.accountSet(account, c)
                         break
                     case AttributeChangeOp.Remove:
                         util.accountRemove(c, account)
@@ -81,13 +80,13 @@ export const connector = async () => {
                 }
             })
     
-            let preUpdateUser = accountToUser(account)
+            let preUpdateUser = util.accountToUser(account)
             let updatedUser = await discourseClient.updateUser(account.uuid, origUser, preUpdateUser)
     
             if (User.equals(origUser, updatedUser)) {
                 res.send({})
             } else {
-                res.send(userToAccount(updatedUser))
+                res.send(util.userToAccount(updatedUser))
             }
         })
         .stdAccountDelete(async (context: Context, input: StdAccountDeleteInput, res: Response<StdAccountDeleteOutput>) => {
@@ -97,79 +96,15 @@ export const connector = async () => {
             const groups = await discourseClient.getGroups()
 
             for (const group of groups) {
-                res.send(groupToEntitlement(group))
+                res.send(util.groupToEntitlement(group))
             }
         })
         .stdEntitlementRead(async (context: Context, input: StdEntitlementReadInput, res: Response<StdEntitlementReadOutput>) => {
             const group = await discourseClient.getGroup(input.identity)
 
-            res.send(groupToEntitlement(group))
+            res.send(util.groupToEntitlement(group))
         })
 }
 
-const accountToUser = (input: any): User => {
-    if (input.attributes.username == null) {
-        throw new ConnectorError(`'username' is required to create user`)
-    }
 
-    let userGroups: Group[] = []
-    if (input.attributes['groups'] != null) {
-        if (!Array.isArray(input.attributes['groups'])) {
-            input.attributes['groups'] = [input.attributes['groups']]
-        }
-
-        for (const group of input.attributes['groups']) {
-            if (typeof group !== 'string') {
-                throw new ConnectorError('Invalid role type: ' + group)
-            }
-
-            let groupParts = group.split(':')
-            if (groupParts.length != 2) {
-                throw new ConnectorError('Invalid role format: ' + group)
-            }
-
-            let userGroup = new Group()
-            userGroup.id = Number(groupParts[0])
-            userGroup.name = groupParts[1]
-            userGroups.push(userGroup)
-        }
-    }
-
-    let user = new User()
-    user.email = input.attributes.email
-    // If account create command, identity isn't provided since Discourse creates the ID.
-    user.id = input.identity == null ? -1 : input.identity
-    user.username = input.attributes.username
-    user.title = input.attributes.title
-    user.password = input.attributes.password
-    user.groups = userGroups
-
-    return user
-}
-
-const userToAccount = (user: User): any => {
-    return {
-        // Convert id to string because IDN doesn't work well with number types for the account ID
-        identity: user.id?.toString(),
-        uuid: user.username,
-        attributes: {
-            username: user.username,
-            id: user.id?.toString(),
-            email: user.email,
-            title: user.title,
-            groups: user.groups!.map(group => { return `${group.id}:${group.name}` })
-        }
-    }
-}
-
-const groupToEntitlement = (group: Group): any => {
-    return {
-        identity: group.id + ':' + group.name,
-		uuid: group.id + ':' + group.name,
-		attributes: {
-			id: group.id + ':' + group.name,
-			name: group.name
-		}
-    }
-}
 

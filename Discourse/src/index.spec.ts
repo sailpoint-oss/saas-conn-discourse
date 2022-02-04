@@ -76,4 +76,41 @@ describe('connector unit tests', () => {
             new PassThrough({ objectMode: true }).on('data', (chunk) => expect(spy).toBeCalled())
         )
     })
+
+    it('should execute stdAccountUpdate set', async () => {
+        const spy = jest.spyOn(Util.prototype, "accountSet")
+        await (await connector())._exec(
+            StandardCommand.StdAccountUpdate,
+            {},
+            {"attributes": {"identity": "test"}, "changes": [{"op": "Set","attribute": "", "value": "" }]},
+            new PassThrough({ objectMode: true }).on('data', (chunk) => expect(spy).toBeCalled())
+        )
+    })
+
+    it('should execute stdAccountDelete', async () => {
+        await (await connector())._exec(
+            StandardCommand.StdAccountDelete,
+            {},
+            {"attributes": {"identity": "test"}, "changes": [{"op": "Add","attribute": "", "value": "" }]},
+            new PassThrough({ objectMode: true }).on('data', (chunk) => expect(chunk).toStrictEqual({}))
+        )
+    })
+
+    it('should execute stdEntitlementList', async () => {
+        await (await connector())._exec(
+            StandardCommand.StdEntitlementList,
+            {},
+            {"attributes": {"identity": "test"}, "changes": [{"op": "Add","attribute": "", "value": "" }]},
+            new PassThrough({ objectMode: true }).on('data', (chunk) => expect(chunk).toStrictEqual({"attributes": {"id": "1:admins","name": "admins",},"identity": "1:admins","uuid": "1:admins",}))
+        )
+    })
+
+    it('should execute stdEntitlementRead', async () => {
+        await (await connector())._exec(
+            StandardCommand.StdEntitlementRead,
+            {},
+            {"attributes": {"identity": "test"}, "changes": [{"op": "Add","attribute": "", "value": "" }]},
+            new PassThrough({ objectMode: true }).on('data', (chunk) => expect(chunk).toStrictEqual({"attributes": {"id": "1:admins","name": "admins",},"identity": "1:admins","uuid": "1:admins",}))
+        )
+    })
 })

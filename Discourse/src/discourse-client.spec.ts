@@ -35,14 +35,14 @@ describe('test happy paths', () => {
 
   it('create user returns correct email', async () => {
     const spy = jest.spyOn(DiscourseClient.prototype as any, "generateRandomPassword")
-    let res = await discourseClient.createUser({"email": "", "username": "test", "password": "12345test"})
+    let res = await discourseClient.createUser({ "email": "", "username": "test", "password": "12345test" })
     expect(spy).toBeCalledTimes(0);
     expect(res.email === 'test.test@test.com')
   })
 
   it('password is generated when not provided', async () => {
     const spy = jest.spyOn(DiscourseClient.prototype as any, "generateRandomPassword")
-    let res = await discourseClient.createUser({"email": "", "username": "test"})
+    let res = await discourseClient.createUser({ "email": "", "username": "test" })
     expect(spy).toBeCalled();
     expect(res.email === 'test.test@test.com')
 
@@ -57,25 +57,29 @@ describe('test happy paths', () => {
 })
 
 describe('test exception', () => {
-  // it('create client with invalid config', async () => {
-  //       try {
-  //           new DiscourseClient({apiKey: 'apiKey',apiUsername: 'apiKey', baseUrl: 'baseUrl', primaryGroup: 'group'})
-  // 	} catch (e) {
-  // 		expect(e instanceof ConnectorError).toBeTruthy()
-  // 	}
+  it('create client with invalid config', async () => {
+    try {
+      new DiscourseClient({ apiUsername: 'apiKey', baseUrl: 'baseUrl', primaryGroup: 'group' })
+    } catch (e) {
+      expect(e instanceof ConnectorError).toBeTruthy()
+    }
 
-  //       try {
-  //           new DiscourseClient({apiKey: 'apiKey',apiUsername: 'apiKey', baseUrl: 'baseUrl', primaryGroup: 'group'})
-  // 	} catch (e) {
-  // 		expect(e instanceof ConnectorError).toBeTruthy()
-  // 	}
-  // })
+    try {
+      new DiscourseClient({ apiKey: 'apiKey', baseUrl: 'baseUrl', primaryGroup: 'group' })
+    } catch (e) {
+      expect(e instanceof ConnectorError).toBeTruthy()
+    }
 
-  // it('list user with invalid result', async () => {
-  //       try {
-  //           await discourseClient.getUsers()
-  // 	} catch (e) {
-  // 		expect(e instanceof ConnectorError).toBeTruthy()
-  // 	}
-  // })
+    try {
+      new DiscourseClient({ apiUsername: 'apiKey', apiKey: 'apiKey', baseUrl: 'baseUrl' })
+    } catch (e) {
+      expect(e instanceof ConnectorError).toBeTruthy()
+    }
+
+    try {
+      new DiscourseClient({ apiUsername: 'apiKey', apiKey: 'apiKey', primaryGroup: 'group' })
+    } catch (e) {
+      expect(e instanceof ConnectorError).toBeTruthy()
+    }
+  })
 })

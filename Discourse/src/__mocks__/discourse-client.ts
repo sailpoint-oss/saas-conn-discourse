@@ -119,8 +119,9 @@ export class DiscourseClient {
      * @returns a list of groups.
      */
     async getGroups(): Promise<Group[]> {
-        let groups: any = groupListResponse
-        return groups
+        let groups: any = groupListResponse.groups[0]
+        groups
+        return [groups]
     }
 
     /**
@@ -129,7 +130,7 @@ export class DiscourseClient {
      * @returns a single group.
      */
     async getGroup(name: string): Promise<Group> {
-        let group: any = groupResponse
+        let group: any = groupListResponse.groups[0]
         return group
     }
 }
