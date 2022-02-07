@@ -1,8 +1,5 @@
 import { ConnectorError, StandardCommand } from '@sailpoint/connector-sdk'
 import { DiscourseClient } from './discourse-client'
-import { AxiosWrapper } from './axios-wrapper'
-import user from './__mocks__/user.json'
-import { hasUncaughtExceptionCaptureCallback } from 'process'
 
 jest.mock('./axios-wrapper')
 let discourseClient = new DiscourseClient({ apiKey: 'company', apiUsername: 'apiKey', baseUrl: 'baseUrl', primaryGroup: 'group' })
@@ -45,7 +42,6 @@ describe('test happy paths', () => {
     let res = await discourseClient.createUser({ "email": "", "username": "test" })
     expect(spy).toBeCalled();
     expect(res.email === 'test.test@test.com')
-
   })
 
   it('get users populates correct fields', async () => {

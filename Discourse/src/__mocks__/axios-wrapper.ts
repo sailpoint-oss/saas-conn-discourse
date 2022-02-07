@@ -4,7 +4,6 @@ import groupMembers from "./group-members.json";
 import userEmail from "./user-email.json";
 import user from "./user.json"
 import userUsername from "./user-username.json"
-import groupResponse from "./group-response.json"
 import dummyResponse from "./dummy-response.json"
 import userUpdateResponse from "./user-update-response.json"
 
@@ -33,7 +32,7 @@ export class AxiosWrapper {
             response.data = user;
         }
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             process.nextTick(() =>
                 resolve(response)
             );
@@ -41,15 +40,15 @@ export class AxiosWrapper {
     }
 
     async post<T = any>(url: string, data?: any) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             process.nextTick(() =>
-                resolve(user)
+                resolve({user})
             );
         });
     }
 
     async delete<T = any>(url: string, data?: any) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             process.nextTick(() =>
                 resolve(user)
             );
@@ -59,11 +58,10 @@ export class AxiosWrapper {
     async put<T = any>(url: string, data?: any) {
         let response = { ...dummyResponse };
         response.data = userUpdateResponse
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             process.nextTick(() =>
                 resolve(response)
             );
         });
     }
-
 }

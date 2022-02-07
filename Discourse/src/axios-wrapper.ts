@@ -8,8 +8,8 @@ export class AxiosWrapper {
         this.httpClient = axios.create({
             baseURL: config.baseUrl,
             headers: {
-                'Api-Key': config.apiKey,
-                'Api-Username': config.apiUsername
+                'Api-Key': config.apiKey ? config.apiKey : '',
+                'Api-Username': config.apiUsername ? config.apiUsername : ''
             }
         })
 
