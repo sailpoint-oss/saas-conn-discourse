@@ -1,6 +1,4 @@
 import { ConnectorError } from "@sailpoint/connector-sdk"
-import axios, { AxiosInstance } from "axios"
-import axiosRetry from "axios-retry"
 import { User } from "./model/user"
 import { Group } from "./model/group"
 import { GroupListResponse } from "./model/group-list-response"
@@ -10,6 +8,8 @@ import { UserEmail } from "./model/user-email"
 import { UserUpdateResponse } from "./model/user-update-response"
 import { UserUpdate } from "./model/user-update"
 import { UserUsernameResponse } from "./model/user-username-response"
+import { Config } from "./model/config"
+import { AxiosWrapper } from "./axios-wrapper"
 
 let randomString = require("random-string")
 let FormData = require("form-data")
@@ -22,53 +22,31 @@ export class DiscourseClient {
     private readonly apiUsername?: string
     private readonly baseUrl?: string
     private readonly primaryGroup?: string
-    httpClient: AxiosInstance
+    httpClient: AxiosWrapper;
 
-    constructor(config: any) {
+    constructor(config: Config) {
         // Fetch necessary properties from config.
-        this.apiKey = config?.apiKey
+        this.apiKey = config.apiKey
         if (this.apiKey == null) {
             throw new ConnectorError('apiKey must be provided from config')
         }
 
-        this.apiUsername = config?.apiUsername
+        this.apiUsername = config.apiUsername
         if (this.apiUsername == null) {
             throw new ConnectorError('apiUsername must be provided from config')
         }
 
-        this.baseUrl = config?.baseUrl
+        this.baseUrl = config.baseUrl
         if (this.baseUrl == null) {
             throw new ConnectorError('baseUrl must be provided from config')
         }
 
-        this.primaryGroup = config?.primaryGroup
+        this.primaryGroup = config.primaryGroup
         if (this.primaryGroup == null) {
             throw new ConnectorError('primaryGroup must be provided from config')
         }
 
-        this.httpClient = axios.create({
-            baseURL: this.baseUrl,
-            headers: {
-                'Api-Key': this.apiKey,
-                'Api-Username': this.apiUsername
-            }
-        })
-
-        // Wrap our Axios HTTP client in an Axios retry object to automatically
-        // handle rate limiting.  By default, this logic will retry a given
-        // API call 3 times before failing.  Read the documentation for 
-        // axios-retry on NPM to see more configuration options.
-        axiosRetry(this.httpClient, {
-            retryDelay: () => {
-                // Wait 30 seconds between calls to an API if the retryCondition
-                // is met.
-                return 30000
-            },
-            retryCondition: (error) => {
-                // Only retry if the API call recieves an error code of 429
-                return error.response!.status === 429
-            }
-        })
+        this.httpClient = new AxiosWrapper(config);
     }
 
     /**
@@ -90,7 +68,7 @@ export class DiscourseClient {
         const response = await this.httpClient.post<any>('/users.json', {
             name: user.username, // name doesn't work in discourse, so just use username
             email: user.email,
-            password: user.password != null ? user.password : randomString({ length: 20, numeric: true, letters: true, special: false }),
+            password: user.password != null ? user.password : this.generateRandomPassword(),
             username: user.username,
             active: true,
             approved: true
@@ -113,15 +91,19 @@ export class DiscourseClient {
         return await this.updateUser(user.username!, createdUser, updateData)
     }
 
+    private generateRandomPassword(): string {
+        return randomString({ length: 20, numeric: true, letters: true, special: false })
+    }
+
     /**
-	 * Delete a user by identity.
-	 * @param identity the id of the user.
-	 * @returns empty struct if response is 2XX
-	 */
-	async deleteUser(identity: string): Promise<any> {
-		await this.httpClient.delete(`/admin/users/${identity}.json`)
-		return {}
-	}
+     * Delete a user by identity.
+     * @param identity the id of the user.
+     * @returns empty struct if response is 2XX
+     */
+    async deleteUser(identity: string): Promise<any> {
+        await this.httpClient.delete(`/admin/users/${identity}.json`)
+        return {}
+    }
 
     async getUsers(): Promise<User[]> {
         // First, get the members of the group.  This will return a subset of the fields we need to complete a user.
@@ -251,12 +233,12 @@ export class DiscourseClient {
         return user
     }
 
-     /**
-     * Retrieve a single user by username.
-     * @param username the username of the user
-     * @returns the user.
-     */
-      async getUserByUsername(username: string): Promise<User> {
+    /**
+    * Retrieve a single user by username.
+    * @param username the username of the user
+    * @returns the user.
+    */
+    async getUserByUsername(username: string): Promise<User> {
         const userResponse = await this.httpClient.get<UserUsernameResponse>(`/u/${username}.json`).catch(error => {
             throw new ConnectorError(`Failed to retrieve user ${username}: Error ${error}`)
         })
@@ -266,7 +248,7 @@ export class DiscourseClient {
         user.email = await this.getUserEmailAddress(user.username!)
         return user
     }
-  
+
 
     /**
      * List groups with pagination

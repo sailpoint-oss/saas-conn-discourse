@@ -1,0 +1,53 @@
+{
+    "members": [
+        {
+            "id": 100,
+            "username": "test",
+            "avatar_template": "/discuss/user_avatar/developer.sailpoint.com/test1/{size}/72_2.png",
+            "primary_group_name": "developer_relations",
+            "flair_name": "developer_relations",
+            "admin": true,
+            "moderator": true,
+            "trust_level": 4,
+            "title": "Developer Relations Team",
+            "last_posted_at": "2021-12-23T18:29:27.789Z",
+            "last_seen_at": "2022-01-31T18:07:35.201Z",
+            "added_at": "2021-03-03T19:43:59.265Z",
+            "timezone": "America/New_York"
+        },
+        {
+            "id": 1305,
+            "username": "test2",
+            "avatar_template": "https://avatars.discourse-cdn.com/v4/letter/y/7ba0ec/{size}.png",
+            "flair_name": null,
+            "trust_level": 4,
+            "title": null,
+            "last_posted_at": null,
+            "last_seen_at": "2022-01-31T10:45:45.827Z",
+            "added_at": "2022-01-18T23:17:21.328Z",
+            "timezone": "Asia/Tokyo"
+        }
+    ],
+    "owners": [
+        {
+            "id": 1,
+            "username": "test1",
+            "avatar_template": "/discuss/user_avatar/developer.sailpoint.com/test1/{size}/72_2.png",
+            "primary_group_name": "developer_relations",
+            "flair_name": "developer_relations",
+            "admin": true,
+            "moderator": true,
+            "trust_level": 4,
+            "title": "Developer Relations Team",
+            "last_posted_at": "2021-12-23T18:29:27.789Z",
+            "last_seen_at": "2022-01-31T18:07:35.201Z",
+            "added_at": "2021-03-03T19:43:59.265Z",
+            "timezone": "America/New_York"
+        }
+    ],
+    "meta": {
+        "total": 2,
+        "limit": 2,
+        "offset": 0
+    }
+}

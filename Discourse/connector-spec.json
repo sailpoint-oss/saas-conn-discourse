@@ -8,7 +8,8 @@
 		"std:account:update",
 		"std:account:delete",
 		"std:entitlement:list",
-		"std:entitlement:read"
+		"std:entitlement:read",
+		"std:account:disable"
 	],
 	"sourceConfig": [
 		{

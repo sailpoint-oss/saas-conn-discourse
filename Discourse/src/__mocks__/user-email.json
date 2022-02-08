@@ -1,0 +1,24 @@
+{
+    "/u/test/emails.json": {
+        "email": "test.test@test.com",
+        "secondary_emails": [],
+        "unconfirmed_emails": [],
+        "associated_accounts": [
+            {
+                "name": "oidc",
+                "description": "test.test@test.com"
+            }
+        ]
+    },
+    "/u/test2/emails.json": {
+        "email": "test2.test2@test2.com",
+        "secondary_emails": [],
+        "unconfirmed_emails": [],
+        "associated_accounts": [
+            {
+                "name": "oidc",
+                "description": "test2.test2@test2.com"
+            }
+        ]
+    }
+}

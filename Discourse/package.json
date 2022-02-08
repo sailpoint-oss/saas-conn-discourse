@@ -1,8 +1,9 @@
 {
   "name": "Discourse",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "main": "dist/index.js",
   "scripts": {
+    "tsc": "tsc",
     "clean": "shx rm -rf ./dist",
     "prebuild": "npm run clean",
     "build": "npx ncc build ./src/index.ts -o ./dist -m -C",
