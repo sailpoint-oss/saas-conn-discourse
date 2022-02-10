@@ -1,11 +1,8 @@
-import { AttributeChangeOp, ConnectorError, StandardCommand } from '@sailpoint/connector-sdk'
+import { AttributeChangeOp } from '@sailpoint/connector-sdk'
 import { DiscourseClient } from './discourse-client'
-import { AxiosWrapper } from './axios-wrapper'
-import user from './__mocks__/user.json'
-import { hasUncaughtExceptionCaptureCallback } from 'process'
 import { Util } from './util'
 
-jest.mock('./axios-wrapper')
+jest.mock('./http/axios-wrapper')
 let discourseClient = new DiscourseClient({ apiKey: 'company', apiUsername: 'apiKey', baseUrl: 'baseUrl', primaryGroup: 'group' })
 
 

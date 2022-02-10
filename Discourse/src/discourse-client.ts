@@ -9,7 +9,8 @@ import { UserUpdateResponse } from "./model/user-update-response"
 import { UserUpdate } from "./model/user-update"
 import { UserUsernameResponse } from "./model/user-username-response"
 import { Config } from "./model/config"
-import { AxiosWrapper } from "./axios-wrapper"
+import { HTTP } from "./http/http"
+import { HTTPFactory } from "./http/http-factory"
 
 let randomString = require("random-string")
 let FormData = require("form-data")
@@ -22,7 +23,7 @@ export class DiscourseClient {
     private readonly apiUsername?: string
     private readonly baseUrl?: string
     private readonly primaryGroup?: string
-    httpClient: AxiosWrapper;
+    httpClient: HTTP;
 
     constructor(config: Config) {
         // Fetch necessary properties from config.
@@ -46,7 +47,7 @@ export class DiscourseClient {
             throw new ConnectorError('primaryGroup must be provided from config')
         }
 
-        this.httpClient = new AxiosWrapper(config);
+        this.httpClient = HTTPFactory.getHTTP(config);
     }
 
     /**
@@ -72,7 +73,7 @@ export class DiscourseClient {
             username: user.username,
             active: true,
             approved: true
-        }).catch(error => {
+        }).catch((error: any) => {
             throw new ConnectorError(`Failed to create user ${user.username}: ${error}`)
         })
 
@@ -135,7 +136,7 @@ export class DiscourseClient {
                     offset: offset,
                     limit: limit
                 }
-            }).catch(error => {
+            }).catch((error: any) => {
                 throw new ConnectorError(`Failed to retrieve members for group ${groupname}`)
             })
 
@@ -148,7 +149,7 @@ export class DiscourseClient {
     }
 
     private async getUserEmailAddress(username: string): Promise<string> {
-        const response = await this.httpClient.get<UserEmail>(`/u/${username}/emails.json`).catch(error => {
+        const response = await this.httpClient.get<UserEmail>(`/u/${username}/emails.json`).catch((error: any) => {
             throw new ConnectorError(`Failed to retrieve email for user ${username}`)
         })
 
@@ -158,7 +159,7 @@ export class DiscourseClient {
     private async addUserToGroup(groupId: number, username: string): Promise<boolean> {
         const response = await this.httpClient.put<any>(`/groups/${groupId}/members.json`, {
             usernames: username
-        }).catch(error => {
+        }).catch((error: any) => {
             if (error.response.status !== 422) {
                 throw new ConnectorError(error)
             }
@@ -169,7 +170,7 @@ export class DiscourseClient {
 
     private async removeUserFromGroup(groupId: number, userId: string): Promise<boolean> {
         const response = await this.httpClient.delete<any>(`/admin/users/${userId}/groups/${groupId}`)
-            .catch(error => {
+            .catch((error: any) => {
                 if (error.response.status !== 422) {
                     throw new ConnectorError(error)
                 }
@@ -223,7 +224,7 @@ export class DiscourseClient {
      * @returns the user.
      */
     async getUser(identity: string): Promise<User> {
-        const userResponse = await this.httpClient.get<User>(`/admin/users/${identity}.json`).catch(error => {
+        const userResponse = await this.httpClient.get<User>(`/admin/users/${identity}.json`).catch((error: any) => {
             throw new ConnectorError(`Failed to retrieve user ${identity}: Error ${error}`)
         })
 
@@ -239,7 +240,7 @@ export class DiscourseClient {
     * @returns the user.
     */
     async getUserByUsername(username: string): Promise<User> {
-        const userResponse = await this.httpClient.get<UserUsernameResponse>(`/u/${username}.json`).catch(error => {
+        const userResponse = await this.httpClient.get<UserUsernameResponse>(`/u/${username}.json`).catch((error: any) => {
             throw new ConnectorError(`Failed to retrieve user ${username}: Error ${error}`)
         })
 
@@ -264,7 +265,7 @@ export class DiscourseClient {
                 params: {
                     page: page
                 }
-            }).catch(error => {
+            }).catch((error: any) => {
                 throw new ConnectorError('Failed to retrieve list of groups')
             })
 
@@ -281,7 +282,7 @@ export class DiscourseClient {
      * @returns a single group.
      */
     async getGroup(name: string): Promise<Group> {
-        const response = await this.httpClient.get<GroupResponse>(`/groups/${name}.json`).catch(error => {
+        const response = await this.httpClient.get<GroupResponse>(`/groups/${name}.json`).catch((error: any) => {
             throw new ConnectorError(`Failed to retrieve the ${name} group.`)
         })
 

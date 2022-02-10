@@ -1,7 +1,7 @@
 import { ConnectorError, StandardCommand } from '@sailpoint/connector-sdk'
 import { DiscourseClient } from './discourse-client'
 
-jest.mock('./axios-wrapper')
+jest.mock('./http/axios-wrapper')
 let discourseClient = new DiscourseClient({ apiKey: 'company', apiUsername: 'apiKey', baseUrl: 'baseUrl', primaryGroup: 'group' })
 
 

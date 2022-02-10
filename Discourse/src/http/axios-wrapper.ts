@@ -1,8 +1,9 @@
 import axios, { AxiosInstance } from "axios"
 import axiosRetry from "axios-retry"
-import { Config } from "./model/config"
+import { Config } from "../model/config"
+import { HTTP } from "./http";
 
-export class AxiosWrapper {
+export class AxiosWrapper implements HTTP {
     httpClient: AxiosInstance;
     constructor(config: Config) {
         this.httpClient = axios.create({

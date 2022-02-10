@@ -2,9 +2,8 @@
 import { User } from "../model/user"
 import { Group } from "../model/group"
 import { Config } from "../model/config"
-import user from "./user.json"
-import groupResponse from "./group-response.json"
-import groupListResponse from "./group-list-response.json"
+import user from "../http/__mocks__/user.json"
+import groupListResponse from "../http/__mocks__/group-list-response.json"
 
 let randomString = require("random-string")
 let FormData = require("form-data")
