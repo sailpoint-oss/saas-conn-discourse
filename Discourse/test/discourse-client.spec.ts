@@ -1,20 +1,20 @@
-import { ConnectorError, StandardCommand } from '@sailpoint/connector-sdk'
-import { DiscourseClient } from './discourse-client'
+import { ConnectorError } from '@sailpoint/connector-sdk'
+import { DiscourseClient } from '../src/discourse-client'
 
-jest.mock('./http/axios-wrapper')
-let discourseClient = new DiscourseClient({ apiKey: 'company', apiUsername: 'apiKey', baseUrl: 'baseUrl', primaryGroup: 'group' })
+jest.mock('../src/http/axios-wrapper')
+const discourseClient = new DiscourseClient({ apiKey: 'company', apiUsername: 'apiKey', baseUrl: 'baseUrl', primaryGroup: 'group' })
 
 
 describe('test happy paths', () => {
   it('test connection', async () => {
 
-    let res = await discourseClient.testConnection()
+    const res = await discourseClient.testConnection()
 
     expect(res).toStrictEqual({})
   })
 
   it('get users populates correct fields', async () => {
-    let res = await discourseClient.getUsers()
+    const res = await discourseClient.getUsers()
 
     expect(res.length).toBe(2)
     expect(res[0].email === 'test.test@test.com')
@@ -32,20 +32,20 @@ describe('test happy paths', () => {
 
   it('create user returns correct email', async () => {
     const spy = jest.spyOn(DiscourseClient.prototype as any, "generateRandomPassword")
-    let res = await discourseClient.createUser({ "email": "", "username": "test", "password": "12345test" })
+    const res = await discourseClient.createUser({"id": 0, "email": "", "username": "test", "password": "12345test" })
     expect(spy).toBeCalledTimes(0);
     expect(res.email === 'test.test@test.com')
   })
 
   it('password is generated when not provided', async () => {
     const spy = jest.spyOn(DiscourseClient.prototype as any, "generateRandomPassword")
-    let res = await discourseClient.createUser({ "email": "", "username": "test" })
+    const res = await discourseClient.createUser({"id": 0,  "email": "", "username": "test" })
     expect(spy).toBeCalled();
     expect(res.email === 'test.test@test.com')
   })
 
   it('get users populates correct fields', async () => {
-    let res = await discourseClient.deleteUser("")
+    const res = await discourseClient.deleteUser("")
 
     expect(res).toStrictEqual({})
   })

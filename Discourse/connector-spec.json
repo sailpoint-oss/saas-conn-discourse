@@ -1,5 +1,5 @@
 {
-	"name": "Discourse",
+	"name": "Discourse-Phil",
 	"commands": [
 		"std:test-connection",
 		"std:account:create",

@@ -1,4 +1,3 @@
-import { Group } from "./group"
 import { User } from "./user"
 
 /**

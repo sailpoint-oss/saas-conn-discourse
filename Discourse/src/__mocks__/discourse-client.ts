@@ -4,9 +4,8 @@ import { Group } from "../model/group"
 import { Config } from "../model/config"
 import user from "../http/__mocks__/user.json"
 import groupListResponse from "../http/__mocks__/group-list-response.json"
+import crypto from "crypto"
 
-let randomString = require("random-string")
-let FormData = require("form-data")
 
 /**
  * DiscourseClient is the client that communicates with Discourse APIs.
@@ -18,9 +17,7 @@ export class DiscourseClient {
     private readonly primaryGroup?: string
 
 
-    constructor(config: Config) {
-
-    }
+    constructor(config: Config) {}
 
     /**
      * Test connection by listing users from the Discourse instance.  
@@ -37,11 +34,11 @@ export class DiscourseClient {
      * @returns the user.
      */
     async createUser(user: User): Promise<User> {
-        return await this.updateUser(user.username!, {}, {})
+        return await this.updateUser(user.username!, {"id": -1}, {"id": -1})
     }
 
     private generateRandomPassword(): string {
-        return randomString({ length: 20, numeric: true, letters: true, special: false })
+        return crypto.randomBytes(20).toString('hex');
     }
 
     /**

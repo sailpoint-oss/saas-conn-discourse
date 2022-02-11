@@ -12,6 +12,7 @@ import { HTTP } from "../http";
 
 export class AxiosWrapper implements HTTP {
     constructor(config: Config) {
+        
     }
     async get<T = any>(url: string, data?: any) {
         let response = { ...dummyResponse };

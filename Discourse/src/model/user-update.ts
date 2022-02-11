@@ -5,6 +5,7 @@ import { User } from "./user"
  * The user fields that can be updated
  */
 export class UserUpdate {
+    id = -1
     username?: string
     active?: boolean
     admin?: boolean
@@ -19,7 +20,7 @@ export class UserUpdate {
      * @returns converted UserUpdate object.
      */
 	static fromUser(user: User): UserUpdate {
-		let update = new UserUpdate()
+		const update = new UserUpdate()
 
 		update.username = user.username
 		update.active = user.active

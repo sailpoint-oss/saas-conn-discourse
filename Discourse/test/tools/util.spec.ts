@@ -1,15 +1,12 @@
 import { AttributeChangeOp } from '@sailpoint/connector-sdk'
-import { DiscourseClient } from './discourse-client'
-import { Util } from './util'
+import { Util } from '../../src/tools/util'
 
-jest.mock('./http/axios-wrapper')
-let discourseClient = new DiscourseClient({ apiKey: 'company', apiUsername: 'apiKey', baseUrl: 'baseUrl', primaryGroup: 'group' })
-
+jest.mock('../../src/http/axios-wrapper')
 
 describe('test happy paths', () => {
   it('accountToUser', async () => {
     const util = new Util
-    let userGroup = {
+    const userGroup = {
         "attributes": {
             "username": "test",
             "groups":[
@@ -22,14 +19,14 @@ describe('test happy paths', () => {
         "identity": "identity"
     }
 
-    let res = util.accountToUser(userGroup)
+    const res = util.accountToUser(userGroup)
 
     expect(res.email).toStrictEqual("test@test.com")
   })
 
   it('accountRemove', async () => {
     const util = new Util
-    let account = {
+    const account = {
       "attributes": {
           "username": "test",
           "groups":[
@@ -39,23 +36,24 @@ describe('test happy paths', () => {
           "title":"title",
           "password": "password"
       },
-      "identity": "identity"
+      "identity": "identity",
+      "uuid": ""
   }
 
 
-    let userGroup = {
+    const userGroup = {
       "op": AttributeChangeOp.Remove,
         "attribute": "groups",
         "value": ["1:group"]
     }
 
-    util.accountRemove(userGroup, account)
+    util.accountRemove(account, userGroup)
     expect(account.attributes.groups.length).toBe(0)
   })
 
   it('accountRemove - no array', async () => {
     const util = new Util
-    let account = {
+    const account = {
       "attributes": {
           "username": "test",
           "groups":[
@@ -65,24 +63,25 @@ describe('test happy paths', () => {
           "title":"title",
           "password": "password"
       },
-      "identity": "identity"
+      "identity": "identity",
+      "uuid": ""
   }
 
 
-    let userGroup = {
+  const userGroup = {
       "op": AttributeChangeOp.Remove,
         "attribute": "groups",
         "value": "1:group"
     }
 
-    util.accountRemove(userGroup, account)
+    util.accountRemove(account, userGroup)
     expect(account.attributes.groups.length).toBe(0)
   })
 
   
   it('accountAdd', async () => {
     const util = new Util
-    let account = {
+    const account = {
       "attributes": {
           "username": "test",
           "groups":[
@@ -92,11 +91,12 @@ describe('test happy paths', () => {
           "title":"title",
           "password": "password"
       },
-      "identity": "identity"
+      "identity": "identity",
+      "uuid": ""
   }
 
 
-    let userGroup = {
+  const userGroup = {
       "op": AttributeChangeOp.Add,
         "attribute": "groups",
         "value": ["2:groups"]
@@ -109,7 +109,7 @@ describe('test happy paths', () => {
 
   it('accountAdd - no Array', async () => {
     const util = new Util
-    let account = {
+    const account = {
       "attributes": {
           "username": "test",
           "groups":[
@@ -119,11 +119,12 @@ describe('test happy paths', () => {
           "title":"title",
           "password": "password"
       },
-      "identity": "identity"
+      "identity": "identity",
+      "uuid": ""
   }
 
 
-    let userGroup = {
+  const userGroup = {
       "op": AttributeChangeOp.Add,
         "attribute": "groups",
         "value": "2:groups"

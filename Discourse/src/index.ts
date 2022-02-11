@@ -20,9 +20,8 @@ import {
     AttributeChangeOp
 } from '@sailpoint/connector-sdk'
 import { DiscourseClient } from './discourse-client'
-import { Group } from './model/group'
 import { User } from './model/user'
-import { Util } from './util'
+import { Util } from './tools/util'
 
 // Connector must be exported as module property named connector
 export const connector = async () => {
@@ -37,6 +36,7 @@ export const connector = async () => {
 
     return createConnector()
         .stdTestConnection(async (context: Context, input: undefined, res: Response<StdTestConnectionOutput>) => {
+            console.log('testing connector logging')
             res.send(await discourseClient.testConnection())
         })
         .stdAccountCreate(async (context: Context, input: StdAccountCreateInput, res: Response<StdAccountCreateOutput>) => {
@@ -62,7 +62,7 @@ export const connector = async () => {
         })
         .stdAccountUpdate(async (context: Context, input: StdAccountUpdateInput, res: Response<StdAccountUpdateOutput>) => {
             const origUser = await discourseClient.getUser(input.identity)
-            let account = util.userToAccount(origUser)
+            const account = util.userToAccount(origUser)
     
             input.changes.forEach(c => {
                 switch (c.op) {
@@ -73,15 +73,15 @@ export const connector = async () => {
                         util.accountSet(account, c)
                         break
                     case AttributeChangeOp.Remove:
-                        util.accountRemove(c, account)
+                        util.accountRemove(account, c)
                         break
                     default:
                         throw new ConnectorError('Unknown account change op: ' + c.op)
                 }
             })
     
-            let preUpdateUser = util.accountToUser(account)
-            let updatedUser = await discourseClient.updateUser(account.uuid, origUser, preUpdateUser)
+            const preUpdateUser = util.accountToUser(account)
+            const updatedUser = await discourseClient.updateUser(origUser, preUpdateUser, account.uuid)
     
             if (User.equals(origUser, updatedUser)) {
                 res.send({})

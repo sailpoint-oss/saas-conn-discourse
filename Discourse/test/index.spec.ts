@@ -1,10 +1,10 @@
-import { connector } from './index'
+import { connector } from '../src/index'
 import { StandardCommand, StdAccountUpdateInput } from '@sailpoint/connector-sdk'
 import { PassThrough } from 'stream'
-import { Config } from './model/config'
-import {Util} from './util'
+import { Config } from '../src/model/config'
+import { Util } from '../src/tools/util'
 
-jest.mock('./discourse-client')
+jest.mock('../src/discourse-client')
 
 const mockConfig: Config = {
     apiKey: 'xxx',
@@ -33,7 +33,7 @@ describe('connector unit tests', () => {
     it('should execute stdAccountCreate', async () => {
         await (await connector())._exec(
             StandardCommand.StdAccountCreate,
-            {},
+            {"id": "0"},
             {"attributes": {"username": "test"}},
             new PassThrough({ objectMode: true }).on('data', (chunk) => expect(chunk.identity).toStrictEqual("1305"))
         )

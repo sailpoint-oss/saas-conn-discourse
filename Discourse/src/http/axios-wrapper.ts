@@ -27,7 +27,7 @@ export class AxiosWrapper implements HTTP {
             retryCondition: (error) => {
                 // Only retry if the API call recieves an error code of 429
                 if (error.response) {
-                    return error.response!.status === 429
+                    return error.response.status === 429
                 } else {
                     return false;
                 }
