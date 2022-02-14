@@ -4,6 +4,12 @@ import { User } from "../model/user"
 
 export class Util {
 
+    /**
+     * converts IDN account input to user
+     *
+     * @param {StdAccountCreateInput} input Account Create Input from IDN
+     * @returns {User} User object
+     */
     public accountToUser(input: StdAccountCreateInput): User {
         if (input.attributes.username == null) {
             throw new ConnectorError(`'username' is required to create user`)
@@ -47,6 +53,12 @@ export class Util {
         return user
     }
     
+    /**
+     * converts user object to IDN account output
+     *
+     * @param {User} user User object
+     * @returns {StdAccountCreateOutput} IDN account create object
+     */
     public userToAccount(user: User): StdAccountCreateOutput {
         return {
             // Convert id to string because IDN doesn't work well with number types for the account ID
@@ -61,7 +73,13 @@ export class Util {
             }
         }
     }
-    
+
+    /**
+     * converts group object to IDN Entitlement List Output
+     *
+     * @param {Group} group group object
+     * @returns {StdAccountCreateOutput} IDN Entitlement List Output
+     */
     public groupToEntitlement(group: Group): StdEntitlementListOutput {
         return {
             identity: group.id + ':' + group.name,
@@ -73,7 +91,12 @@ export class Util {
         }
     }
 
-
+    /**
+     * Removes an account(s) from the IDN account create object
+     *
+     * @param {StdAccountCreateOutput} account group object that will be modifed
+     * @param {AttributeChange} c the attribute change object that tells what to remove
+     */
     public accountRemove(account: StdAccountCreateOutput, c: AttributeChange) {
         if (c.attribute == 'groups') {
             if (Array.isArray(c.value)) {
@@ -96,6 +119,12 @@ export class Util {
         }
     }
     
+    /**
+     * Adds an account(s) from the IDN account create object
+     *
+     * @param {StdAccountCreateOutput} account group object that will be modifed
+     * @param {AttributeChange} c the attribute change object that tells what to add
+     */
     public accountAdd(account: StdAccountCreateOutput, c: AttributeChange) {
         const attribute: string[] = <string[]>account.attributes[c.attribute]
         if (attribute == null) {
@@ -112,6 +141,13 @@ export class Util {
             }
         }
     }
+
+    /**
+     * Sets an account(s) from the IDN account create object
+     *
+     * @param {StdAccountCreateOutput} account group object that will be modifed
+     * @param {AttributeChange} c the attribute change object that tells what to set
+     */
     public accountSet(account: StdAccountCreateOutput, c: AttributeChange) {
         account.attributes[c.attribute] = c.value
     }

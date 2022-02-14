@@ -92,6 +92,10 @@ export class DiscourseClient {
         return await this.updateUser(createdUser, updateData, user.username)
     }
 
+    /**
+    * Generates a password of 20 characters using the crypto package
+    * @returns {string} the random password.
+    */
     private generateRandomPassword(): string {
         return crypto.randomBytes(20).toString('hex');
     }
@@ -106,6 +110,10 @@ export class DiscourseClient {
         return {}
     }
 
+    /**
+    * Gets users from the discourse system
+    * @returns {Promise<User[]>} the users.
+    */
     async getUsers(): Promise<User[]> {
         // First, get the members of the group.  This will return a subset of the fields we need to complete a user.
         const groupMembers = await this.getGroupMembers(this.primaryGroup)
