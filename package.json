@@ -1,5 +1,5 @@
 {
-  "name": "Discourse-Phil",
+  "name": "Discourse",
   "version": "0.1.2",
   "main": "dist/index.js",
   "scripts": {
