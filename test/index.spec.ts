@@ -34,7 +34,7 @@ describe('connector unit tests', () => {
         await (await connector())._exec(
             StandardCommand.StdAccountCreate,
             {"id": "0"},
-            {"attributes": {"username": "test"}},
+            {"attributes": {"username": "test", "password": "1234"}},
             new PassThrough({ objectMode: true }).on('data', (chunk) => expect(chunk.identity).toStrictEqual("1305"))
         )
     })

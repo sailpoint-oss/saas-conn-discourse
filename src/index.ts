@@ -22,6 +22,7 @@ import {
 import { DiscourseClient } from './discourse-client'
 import { User } from './model/user'
 import { Util } from './tools/util'
+import { logger } from './tools/logger';
 
 // Connector must be exported as module property named connector
 export const connector = async () => {
@@ -37,15 +38,17 @@ export const connector = async () => {
     return createConnector()
         .stdTestConnection(async (context: Context, input: undefined, res: Response<StdTestConnectionOutput>) => {
             console.log('testing connector logging')
+            logger.info('testing connector logging using logger')
             res.send(await discourseClient.testConnection())
         })
         .stdAccountCreate(async (context: Context, input: StdAccountCreateInput, res: Response<StdAccountCreateOutput>) => {
+            logger.info(input, 'creating user')
             const user = await discourseClient.createUser(util.accountToUser(input))
             res.send(util.userToAccount(user))
         })
         .stdAccountList(async (context: Context, input: undefined, res: Response<StdAccountListOutput>) => {
             const users = await discourseClient.getUsers()
-
+            //logger.info(users, 'found users, return result')
             for (const user of users) {
                 res.send(util.userToAccount(user))
             }

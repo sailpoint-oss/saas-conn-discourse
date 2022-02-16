@@ -15,5 +15,6 @@ export const logger = pino({
     mixin() {
         return { AppType: 'Discourse' };
     },
-    redact: { paths: ['attributes.password'], censor: '****' }
+    // Remove any json path attributes that might contain sensitive information
+    redact: { paths: ['attributes.password', 'password'], censor: '****' }
 });
