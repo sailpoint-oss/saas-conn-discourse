@@ -14,7 +14,6 @@ import { HTTPFactory } from "./http/http-factory"
 import crypto from "crypto"
 import FormData from "form-data"
 import { AxiosError } from "axios"
-import { logger } from './tools/logger';
 
 /**
  * DiscourseClient is the client that communicates with Discourse APIs.
@@ -67,7 +66,6 @@ export class DiscourseClient {
      * @returns the user.
      */
     async createUser(user: User): Promise<User> {
-        logger.info(user, 'creating user in discourse client')
         await this.httpClient.post<void>('/users.json', {
             name: user.username, // name doesn't work in discourse, so just use username
             email: user.email,

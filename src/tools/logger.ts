@@ -16,5 +16,5 @@ export const logger = pino({
         return { AppType: 'Discourse' };
     },
     // Remove any json path attributes that might contain sensitive information
-    redact: { paths: ['attributes.password', 'password'], censor: '****' }
+    redact: { paths: ['attributes.password', 'attributes.username', 'password', 'username', 'ip_address', 'registration_ip_address', '*.password', '*.username', '*.ip_address', '*.registration_ip_address'], censor: '****' }
 });
