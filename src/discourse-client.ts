@@ -14,7 +14,7 @@ import { HTTPFactory } from "./http/http-factory"
 import crypto from "crypto"
 import FormData from "form-data"
 import { AxiosError } from "axios"
-import { InvalidConfigurationError } from "./invalid-configuration-error"
+import { InvalidConfigurationError } from "./errors/invalid-configuration-error"
 
 /**
  * DiscourseClient is the client that communicates with Discourse APIs.
