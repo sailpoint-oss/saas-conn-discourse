@@ -4,7 +4,7 @@ import { Group } from "./group"
  * User is a complete definition of a user, including entitlements
  */
 export class User {
-    id?: number
+    id = -1
     username?: string
     email?: string
     active?: boolean
@@ -34,8 +34,8 @@ export class User {
 		}
 
         // Sort the two groups by id first.  If id's match, then sort by group name.
-		a.groups.sort((x, y) => x.id == y.id ? x.name!.localeCompare(y.name!) : x.id! - y.id!)
-		b.groups.sort((x, y) => x.id == y.id ? x.name!.localeCompare(y.name!) : x.id! - y.id!)
+		a.groups.sort((x, y) => x.id == y.id ? x.name.localeCompare(y.name) : x.id - y.id)
+		b.groups.sort((x, y) => x.id == y.id ? x.name.localeCompare(y.name) : x.id - y.id)
 
 		for (let i = 0; i < a.groups.length; i ++) {
 			if (a.groups[i].id != b.groups[i].id || a.groups[i].name != b.groups[i].name) {

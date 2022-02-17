@@ -12,6 +12,6 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "test/tools/util.spec.ts", "test/index.spec.ts"],
   "exclude": ["node_modules", "**/*.spec.ts", "**/*.spec.js"]
 }

@@ -1,10 +1,10 @@
-import { connector } from './index'
+import { connector } from '../src/index'
 import { StandardCommand, StdAccountUpdateInput } from '@sailpoint/connector-sdk'
 import { PassThrough } from 'stream'
-import { Config } from './model/config'
-import {Util} from './util'
+import { Config } from '../src/model/config'
+import { Util } from '../src/tools/util'
 
-jest.mock('./discourse-client')
+jest.mock('../src/discourse-client')
 
 const mockConfig: Config = {
     apiKey: 'xxx',
@@ -33,8 +33,8 @@ describe('connector unit tests', () => {
     it('should execute stdAccountCreate', async () => {
         await (await connector())._exec(
             StandardCommand.StdAccountCreate,
-            {},
-            {"attributes": {"username": "test"}},
+            {"id": "0"},
+            {"attributes": {"username": "test", "password": "1234"}},
             new PassThrough({ objectMode: true }).on('data', (chunk) => expect(chunk.identity).toStrictEqual("1305"))
         )
     })
@@ -62,7 +62,16 @@ describe('connector unit tests', () => {
         await (await connector())._exec(
             StandardCommand.StdAccountUpdate,
             {},
-            {"attributes": {"identity": "test"}, "changes": [{"op": "Add","attribute": "", "value": "" }]},
+            {
+                "identity": "100",
+                "changes": [
+                    {
+                        "op": "Add",
+                        "attribute": "",
+                        "value": ""
+                    }
+                ]
+            },
             new PassThrough({ objectMode: true }).on('data', (chunk) => expect(spy).toBeCalled())
         )
     })
@@ -72,7 +81,16 @@ describe('connector unit tests', () => {
         await (await connector())._exec(
             StandardCommand.StdAccountUpdate,
             {},
-            {"attributes": {"identity": "test"}, "changes": [{"op": "Remove","attribute": "", "value": "" }]},
+            {
+                "identity": "100",
+                "changes": [
+                    {
+                        "op": "Remove",
+                        "attribute": "",
+                        "value": ""
+                    }
+                ]
+            },
             new PassThrough({ objectMode: true }).on('data', (chunk) => expect(spy).toBeCalled())
         )
     })
@@ -82,7 +100,16 @@ describe('connector unit tests', () => {
         await (await connector())._exec(
             StandardCommand.StdAccountUpdate,
             {},
-            {"attributes": {"identity": "test"}, "changes": [{"op": "Set","attribute": "", "value": "" }]},
+            {
+                "identity": "100",
+                "changes": [
+                    {
+                        "op": "Set",
+                        "attribute": "",
+                        "value": ""
+                    }
+                ]
+            },
             new PassThrough({ objectMode: true }).on('data', (chunk) => expect(spy).toBeCalled())
         )
     })
