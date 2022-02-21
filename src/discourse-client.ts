@@ -14,6 +14,7 @@ import { HTTPFactory } from "./http/http-factory"
 import crypto from "crypto"
 import FormData from "form-data"
 import { AxiosError } from "axios"
+import { InvalidConfigurationError } from "./errors/invalid-configuration-error"
 
 /**
  * DiscourseClient is the client that communicates with Discourse APIs.
@@ -29,22 +30,22 @@ export class DiscourseClient {
         // Fetch necessary properties from config.
         this.apiKey = config.apiKey
         if (this.apiKey == null) {
-            throw new ConnectorError('apiKey must be provided from config')
+            throw new InvalidConfigurationError('apiKey must be provided from config')
         }
 
         this.apiUsername = config.apiUsername
         if (this.apiUsername == null) {
-            throw new ConnectorError('apiUsername must be provided from config')
+            throw new InvalidConfigurationError('apiUsername must be provided from config')
         }
 
         this.baseUrl = config.baseUrl
         if (this.baseUrl == null) {
-            throw new ConnectorError('baseUrl must be provided from config')
+            throw new InvalidConfigurationError('baseUrl must be provided from config')
         }
 
         this.primaryGroup = config.primaryGroup
         if (this.primaryGroup == null) {
-            throw new ConnectorError('primaryGroup must be provided from config')
+            throw new InvalidConfigurationError('primaryGroup must be provided from config')
         }
 
         this.httpClient = HTTPFactory.getHTTP(config);

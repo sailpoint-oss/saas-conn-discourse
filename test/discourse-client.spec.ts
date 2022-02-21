@@ -1,4 +1,5 @@
 import { ConnectorError } from '@sailpoint/connector-sdk'
+import { InvalidConfigurationError } from '../src/errors/invalid-configuration-error'
 import { DiscourseClient } from '../src/discourse-client'
 
 jest.mock('../src/http/axios-wrapper')
@@ -57,25 +58,25 @@ describe('test exception', () => {
     try {
       new DiscourseClient({ apiUsername: 'apiKey', baseUrl: 'baseUrl', primaryGroup: 'group' })
     } catch (e) {
-      expect(e instanceof ConnectorError).toBeTruthy()
+      expect(e instanceof InvalidConfigurationError).toBeTruthy()
     }
 
     try {
       new DiscourseClient({ apiKey: 'apiKey', baseUrl: 'baseUrl', primaryGroup: 'group' })
     } catch (e) {
-      expect(e instanceof ConnectorError).toBeTruthy()
+      expect(e instanceof InvalidConfigurationError).toBeTruthy()
     }
 
     try {
       new DiscourseClient({ apiUsername: 'apiKey', apiKey: 'apiKey', baseUrl: 'baseUrl' })
     } catch (e) {
-      expect(e instanceof ConnectorError).toBeTruthy()
+      expect(e instanceof InvalidConfigurationError).toBeTruthy()
     }
 
     try {
       new DiscourseClient({ apiUsername: 'apiKey', apiKey: 'apiKey', primaryGroup: 'group' })
     } catch (e) {
-      expect(e instanceof ConnectorError).toBeTruthy()
+      expect(e instanceof InvalidConfigurationError).toBeTruthy()
     }
   })
 })
