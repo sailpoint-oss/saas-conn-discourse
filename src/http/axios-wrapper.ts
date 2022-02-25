@@ -19,11 +19,7 @@ export class AxiosWrapper implements HTTP {
         // API call 3 times before failing.  Read the documentation for 
         // axios-retry on NPM to see more configuration options.
         axiosRetry(this.httpClient, {
-            retryDelay: () => {
-                // Wait 30 seconds between calls to an API if the retryCondition
-                // is met.
-                return 30000
-            },
+            retryDelay: axiosRetry.exponentialDelay,
             retryCondition: (error) => {
                 // Only retry if the API call recieves an error code of 429
                 if (error.response) {

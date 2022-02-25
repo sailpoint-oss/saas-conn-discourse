@@ -57,7 +57,10 @@ export class DiscourseClient {
      * @returns empty struct if response is 2XX
      */
     async testConnection(): Promise<StdTestConnectionOutput> {
-        await this.httpClient.get<User[]>('/admin/users/list/staff.json')
+        const staffList = await this.httpClient.get<User[]>('/admin/users/list/staff.json')
+        if (staffList.status !== 200) {
+            throw new ConnectorError("Unable to connect to Discourse")
+        }
         return {}
     }
 
