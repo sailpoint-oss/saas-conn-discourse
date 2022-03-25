@@ -17,12 +17,14 @@ import {
     StdEntitlementReadOutput,
     StdEntitlementReadInput,
     StdTestConnectionOutput,
-    AttributeChangeOp
+    AttributeChangeOp,
+    StdEntitlementListInput
 } from '@sailpoint/connector-sdk'
 import { DiscourseClient } from './discourse-client'
 import { User } from './model/user'
 import { Util } from './tools/util'
 import { logger } from './tools/logger';
+
 
 // Connector must be exported as module property named connector
 export const connector = async () => {
@@ -71,7 +73,7 @@ export const connector = async () => {
             const origUser = await discourseClient.getUser(input.identity)
             logger.debug(origUser, 'discourse user found')
             const account = util.userToAccount(origUser)
-    
+
             input.changes.forEach(c => {
                 switch (c.op) {
                     case AttributeChangeOp.Add:
@@ -89,19 +91,23 @@ export const connector = async () => {
             })
     
             const preUpdateUser = util.accountToUser(account)
-            const updatedUser = await discourseClient.updateUser(origUser, preUpdateUser, account.uuid)
-            logger.debug(updatedUser, 'updated user')
-            if (User.equals(origUser, updatedUser)) {
-                res.send({})
+            if ('uuid' in account) {
+                const updatedUser = await discourseClient.updateUser(origUser, preUpdateUser, account.uuid)
+                logger.debug(updatedUser, 'updated user')
+                if (User.equals(origUser, updatedUser)) {
+                    res.send({})
+                } else {
+                    res.send(util.userToAccount(updatedUser))
+                }
             } else {
-                res.send(util.userToAccount(updatedUser))
+                throw new ConnectorError('unexpected type returned in user object')
             }
         })
         .stdAccountDelete(async (context: Context, input: StdAccountDeleteInput, res: Response<StdAccountDeleteOutput>) => {
             logger.debug(input, 'account delete input object')
             res.send(await discourseClient.deleteUser(input.identity))
         })
-        .stdEntitlementList(async (context: Context, input: undefined, res: Response<StdEntitlementListOutput>) => {
+        .stdEntitlementList(async (context: Context, input: StdEntitlementListInput, res: Response<StdEntitlementListOutput>) => {
             logger.debug('listing entitlements')
             const groups = await discourseClient.getGroups()
             logger.debug(groups, 'discourse groups found')

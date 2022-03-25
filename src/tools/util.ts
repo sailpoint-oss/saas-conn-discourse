@@ -84,6 +84,7 @@ export class Util {
         return {
             identity: group.id + ':' + group.name,
             uuid: group.id + ':' + group.name,
+            type: 'group',
             attributes: {
                 id: group.id + ':' + group.name,
                 name: group.name ? group.name : ''
