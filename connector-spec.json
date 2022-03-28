@@ -103,27 +103,45 @@
 	"accountCreateTemplate":{
 		"fields":[
 			{
-				"name": "email",
+				"key": "email",
+				"label": "Email",
 				"type": "string",
-				"identityAttribute": "email",
-				"required": true
+				"required": true,
+				"initialValue": {
+					"type":"identityAttribute",
+					"attributes": {
+						"name": "email"
+					}
+				}
 			},
 			{
-				"name": "username",
+				"key": "username",
+				"label": "Username",
 				"type": "string",
-				"identityAttribute": "uid",
-				"required": true
+				"required": true,
+				"initialValue": {
+					"type":"identityAttribute",
+					"attributes": {
+						"name": "uid"
+					}
+				}
 			},
 			{
-				"name": "password",
+				"key": "password",
+				"label": "Password",
 				"type": "string",
-				"identityAttribute": "",
-				"required": false
+				"required": false,
+				"initialValue": {
+					"type": "generator",
+					"attributes": {
+					  "name": "Create Password"
+					}
+				}
 			},
 			{
-				"name": "title",
+				"key": "title",
+				"label": "Title",
 				"type": "string",
-				"identityAttribute": "",
 				"required": false
 			}
 		]

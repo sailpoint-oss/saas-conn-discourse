@@ -15,7 +15,7 @@ export class AxiosWrapper implements HTTP {
         
     }
     async get<T = any>(url: string, data?: any) {
-        let response = { ...dummyResponse };
+        const response = { ...dummyResponse };
 
         if (url.indexOf("/groups/group/members.json") === 0) {
             response.data = groupMembers;
@@ -65,7 +65,7 @@ export class AxiosWrapper implements HTTP {
     }
 
     async put<T = any>(url: string, data?: any) {
-        let response = { ...dummyResponse };
+        const response = { ...dummyResponse };
         response.data = userUpdateResponse
         return new Promise((resolve) => {
             process.nextTick(() =>
