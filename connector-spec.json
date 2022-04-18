@@ -142,7 +142,13 @@
 				"key": "title",
 				"label": "Title",
 				"type": "string",
-				"required": false
+				"required": false,
+				"initialValue": {
+					"type":"identityAttribute",
+					"attributes": {
+						"name": "jobTitle"
+					}
+				}
 			}
 		]
 	}

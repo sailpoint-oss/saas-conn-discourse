@@ -128,7 +128,7 @@ describe('connector unit tests', () => {
             StandardCommand.StdEntitlementList,
             {},
             {"attributes": {"identity": "test"}, "changes": [{"op": "Add","attribute": "", "value": "" }]},
-            new PassThrough({ objectMode: true }).on('data', (chunk) => expect(chunk).toStrictEqual({"attributes": {"id": "1:admins","name": "admins",},"identity": "1:admins","uuid": "1:admins",}))
+            new PassThrough({ objectMode: true }).on('data', (chunk) => expect(chunk).toStrictEqual({"attributes": {"id": "1:admins","name": "admins",},"identity": "1:admins", "type":"group", "uuid": "1:admins",}))
         )
     })
 
@@ -137,7 +137,7 @@ describe('connector unit tests', () => {
             StandardCommand.StdEntitlementRead,
             {},
             {"attributes": {"identity": "test"}, "changes": [{"op": "Add","attribute": "", "value": "" }]},
-            new PassThrough({ objectMode: true }).on('data', (chunk) => expect(chunk).toStrictEqual({"attributes": {"id": "1:admins","name": "admins",},"identity": "1:admins","uuid": "1:admins",}))
+            new PassThrough({ objectMode: true }).on('data', (chunk) => expect(chunk).toStrictEqual({"attributes": {"id": "1:admins", "name": "admins",},"identity": "1:admins", "type":"group", "uuid": "1:admins",}))
         )
     })
 })

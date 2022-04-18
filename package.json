@@ -11,7 +11,7 @@
     "prettier": "npx prettier --write .",
     "test": "jest --coverage",
     "prepack-zip": "npm ci && npm run build",
-    "pack-zip": "(cp connector-spec.json ./dist/ && cd ./dist && zip $npm_package_name-$npm_package_version.zip ./index.js ./connector-spec.json)"
+    "pack-zip": "(cp connector-spec.json ./dist/ && cd ./dist && bestzip $npm_package_name-$npm_package_version.zip ./index.js ./connector-spec.json)"
   },
   "private": true,
   "dependencies": {
@@ -27,6 +27,7 @@
     "@typescript-eslint/eslint-plugin": "^5.11.0",
     "@typescript-eslint/parser": "^5.11.0",
     "@vercel/ncc": "^0.28.6",
+    "bestzip": "^2.2.0",
     "eslint": "^8.8.0",
     "jest": "^27.0.6",
     "prettier": "^2.3.2",
