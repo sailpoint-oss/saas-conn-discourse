@@ -16,9 +16,9 @@ process.env.CONNECTOR_CONFIG = Buffer.from(JSON.stringify(mockConfig)).toString(
 
 describe('connector unit tests', () => {
 
-    it('connector SDK major version should be 0', async () => {
+    it('connector SDK major version should be 1', async () => {
         const version = (await connector()).sdkVersion;
-        expect(version).toStrictEqual(0);
+        expect(version).toStrictEqual(1);
     })
 
     it('should execute stdTestConnectionHandler', async () => {
@@ -26,7 +26,8 @@ describe('connector unit tests', () => {
             StandardCommand.StdTestConnection,
             {},
             undefined,
-            new PassThrough({ objectMode: true }).on('data', (chunk) => expect(chunk).toStrictEqual({}))
+            new PassThrough({ objectMode: true }).on('data', (chunk) => 
+            expect(chunk.data).toStrictEqual({}))
         )
     })
 
@@ -35,7 +36,8 @@ describe('connector unit tests', () => {
             StandardCommand.StdAccountCreate,
             {"id": "0"},
             {"attributes": {"username": "test", "password": "1234"}},
-            new PassThrough({ objectMode: true }).on('data', (chunk) => expect(chunk.identity).toStrictEqual("1305"))
+            new PassThrough({ objectMode: true }).on('data', (chunk) => 
+            expect(chunk.data.identity).toStrictEqual("1305"))
         )
     })
 
@@ -44,7 +46,8 @@ describe('connector unit tests', () => {
             StandardCommand.StdAccountList,
             {},
             {"attributes": {"username": "test"}},
-            new PassThrough({ objectMode: true }).on('data', (chunk) => expect(chunk.identity).toStrictEqual("100"))
+            new PassThrough({ objectMode: true }).on('data', (chunk) => 
+            expect(chunk.data.identity).toStrictEqual("100"))
         )
     })
 
@@ -53,7 +56,8 @@ describe('connector unit tests', () => {
             StandardCommand.StdAccountRead,
             {},
             {"attributes": {"username": "test"}},
-            new PassThrough({ objectMode: true }).on('data', (chunk) => expect(chunk.identity).toStrictEqual("1305"))
+            new PassThrough({ objectMode: true }).on('data', (chunk) => 
+            expect(chunk.data.identity).toStrictEqual("1305"))
         )
     })
 
@@ -119,7 +123,8 @@ describe('connector unit tests', () => {
             StandardCommand.StdAccountDelete,
             {},
             {"attributes": {"identity": "test"}, "changes": [{"op": "Add","attribute": "", "value": "" }]},
-            new PassThrough({ objectMode: true }).on('data', (chunk) => expect(chunk).toStrictEqual({}))
+            new PassThrough({ objectMode: true }).on('data', (chunk) => 
+            expect(chunk.data).toStrictEqual({}))
         )
     })
 
@@ -128,7 +133,8 @@ describe('connector unit tests', () => {
             StandardCommand.StdEntitlementList,
             {},
             {"attributes": {"identity": "test"}, "changes": [{"op": "Add","attribute": "", "value": "" }]},
-            new PassThrough({ objectMode: true }).on('data', (chunk) => expect(chunk).toStrictEqual({"attributes": {"id": "1:admins","name": "admins",},"identity": "1:admins", "type":"group", "uuid": "1:admins",}))
+            new PassThrough({ objectMode: true }).on('data', (chunk) => 
+            expect(chunk.data).toStrictEqual({"attributes": {"id": "1:admins","name": "admins",},"identity": "1:admins", "type":"group", "uuid": "1:admins",}))
         )
     })
 
@@ -137,7 +143,8 @@ describe('connector unit tests', () => {
             StandardCommand.StdEntitlementRead,
             {},
             {"attributes": {"identity": "test"}, "changes": [{"op": "Add","attribute": "", "value": "" }]},
-            new PassThrough({ objectMode: true }).on('data', (chunk) => expect(chunk).toStrictEqual({"attributes": {"id": "1:admins", "name": "admins",},"identity": "1:admins", "type":"group", "uuid": "1:admins",}))
+            new PassThrough({ objectMode: true }).on('data', (chunk) => 
+            expect(chunk.data).toStrictEqual({"attributes": {"id": "1:admins", "name": "admins",},"identity": "1:admins", "type":"group", "uuid": "1:admins",}))
         )
     })
 })

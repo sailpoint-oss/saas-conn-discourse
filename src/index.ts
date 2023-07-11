@@ -18,7 +18,8 @@ import {
     StdEntitlementReadInput,
     StdTestConnectionOutput,
     AttributeChangeOp,
-    StdEntitlementListInput
+    StdEntitlementListInput,
+    StdAccountListInput
 } from '@sailpoint/connector-sdk'
 import { DiscourseClient } from './discourse-client'
 import { User } from './model/user'
@@ -48,7 +49,7 @@ export const connector = async () => {
             logger.debug(user, 'new discourse user object')
             res.send(util.userToAccount(user))
         })
-        .stdAccountList(async (context: Context, input: undefined, res: Response<StdAccountListOutput>) => {
+        .stdAccountList(async (context: Context, input: StdAccountListInput, res: Response<StdAccountListOutput>) => {
             logger.debug('listing accounts')
             const users = await discourseClient.getUsers()
             logger.debug(users, 'discourse users found')
