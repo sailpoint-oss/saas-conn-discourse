@@ -51,11 +51,19 @@ export const connector = async () => {
         })
         .stdAccountList(async (context: Context, input: StdAccountListInput, res: Response<StdAccountListOutput>) => {
             logger.debug('listing accounts')
-            const users = await discourseClient.getUsers()
-            logger.debug(users, 'discourse users found')
-            for (const user of users) {
-                res.send(util.userToAccount(user))
+            let resultsCount = 5
+            let offset = 0
+            while (resultsCount == 5) {
+                const users = await discourseClient.getUsers(offset, 5)
+                resultsCount = users.length
+                logger.debug(users, 'discourse users found')
+                for (const user of users) {
+                    res.send(util.userToAccount(user))
+                }
+                offset += 5
             }
+            
+
         })
         .stdAccountRead(async (context: Context, input: StdAccountReadInput, res: Response<StdAccountReadOutput>) => {
             logger.debug(input, 'account read input object')

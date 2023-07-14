@@ -23,7 +23,7 @@ export class DiscourseClient {
     private readonly apiKey?: string
     private readonly apiUsername?: string
     private readonly baseUrl?: string
-    private readonly primaryGroup?: string
+    private readonly primaryGroup: string
     httpClient: HTTP;
 
     constructor(config: Config) {
@@ -43,9 +43,10 @@ export class DiscourseClient {
             throw new InvalidConfigurationError('baseUrl must be provided from config')
         }
 
-        this.primaryGroup = config.primaryGroup
-        if (this.primaryGroup == null) {
+        if (config.primaryGroup == undefined) {
             throw new InvalidConfigurationError('primaryGroup must be provided from config')
+        } else {
+            this.primaryGroup = config.primaryGroup
         }
 
         this.httpClient = HTTPFactory.getHTTP(config);
@@ -118,45 +119,31 @@ export class DiscourseClient {
     * Gets users from the discourse system
     * @returns {Promise<User[]>} the users.
     */
-    async getUsers(): Promise<User[]> {
+    async getUsers(offset: number, limit: number): Promise<User[]> {
         // First, get the members of the group.  This will return a subset of the fields we need to complete a user.
-        const groupMembers = await this.getGroupMembers(this.primaryGroup)
+        const groupMembers = await this.getGroupMembers(this.primaryGroup, offset, limit)
 
         // Get the full user representation.
-
         const users = await Promise.all(groupMembers.map(member => this.getUser(member.id.toString())))
 
-        // Emails aren't included in the above call.  Need to get each user's email address from a different endpoint.
-        const emails = await Promise.all(groupMembers.map(member => this.getUserEmailAddress(member.username)))
-
-        // Add each email address to the full user representation
-        for (let i = 0; i < groupMembers.length; i++) {
-            users[i].email = emails[i]
-        }
 
         return users
     }
 
-    private async getGroupMembers(groupname?: string): Promise<User[]> {
-        let offset = 0
-        let total = 1 // Set total to 1 until we get the actual total from the first call
-        const limit = 5
+    private async getGroupMembers(groupname: string, offset: number, limit: number): Promise<User[]> {
         let members: User[] = []
 
-        while (offset < total) {
-            const response = await this.httpClient.get<GroupMembers>(`/groups/${groupname}/members.json`, {
-                params: {
-                    offset: offset,
-                    limit: limit
-                }
-            }).catch((error: unknown) => {
-                throw new ConnectorError(`Failed to retrieve members for group ${groupname}: ${error}`)
-            })
+        const response = await this.httpClient.get<GroupMembers>(`/groups/${groupname}/members.json`, {
+            params: {
+                offset: offset,
+                limit: limit
+            }
+        }).catch((error: unknown) => {
+            throw new ConnectorError(`Failed to retrieve members for group ${groupname}: ${error}`)
+        })
 
-            members = members.concat(response.data.members);
-            total = response.data.meta.total
-            offset += limit
-        }
+        members = members.concat(response.data.members);
+        offset += limit
 
         return members
     }

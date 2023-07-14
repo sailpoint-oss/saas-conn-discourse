@@ -15,7 +15,7 @@ describe('test happy paths', () => {
   })
 
   it('get users populates correct fields', async () => {
-    const res = await discourseClient.getUsers()
+    const res = await discourseClient.getUsers(0, 2)
 
     expect(res.length).toBe(2)
     expect(res[0].email === 'test.test@test.com')

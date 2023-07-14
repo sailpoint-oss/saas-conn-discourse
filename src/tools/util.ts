@@ -64,6 +64,8 @@ export class Util {
             // Convert id to string because IDN doesn't work well with number types for the account ID
             identity: user.id ? user.id.toString() : '',
             uuid: user.username ? user.username : '',
+            disabled: !user.active,
+            locked: !user.active,
             attributes: {
                 username: user.username ? user.username : '',
                 id: user.id ? user.id.toString() : '',
