@@ -114,9 +114,12 @@ export class DiscourseClient {
      * List groups with pagination
      * @returns a list of groups.
      */
-    async getGroups(): Promise<Group[]> {
+    async getGroups(page: number): Promise<Group[]> {
         let groups: any = groupListResponse.groups[0]
         groups
+        if (page > 0) {
+            return []
+        }
         return [groups]
     }
 

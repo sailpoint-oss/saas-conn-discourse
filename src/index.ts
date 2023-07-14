@@ -118,11 +118,21 @@ export const connector = async () => {
         })
         .stdEntitlementList(async (context: Context, input: StdEntitlementListInput, res: Response<StdEntitlementListOutput>) => {
             logger.debug('listing entitlements')
-            const groups = await discourseClient.getGroups()
-            logger.debug(groups, 'discourse groups found')
-            for (const group of groups) {
-                res.send(util.groupToEntitlement(group))
+            let page = 0
+            let hasMorePages = true
+            while (hasMorePages) {
+                const groups = await discourseClient.getGroups(page)
+                if (groups.length === 0) {
+                    hasMorePages = false
+                } else {
+                    logger.debug(groups, 'discourse groups found')
+                    for (const group of groups) {
+                        res.send(util.groupToEntitlement(group))
+                    }
+                }
+                page++
             }
+
         })
         .stdEntitlementRead(async (context: Context, input: StdEntitlementReadInput, res: Response<StdEntitlementReadOutput>) => {
             logger.debug(input, 'entitlement read input object')

@@ -258,23 +258,17 @@ export class DiscourseClient {
      * List groups with pagination
      * @returns a list of groups.
      */
-    async getGroups(): Promise<Group[]> {
-        let page = 0
-        let hasMorePages = true
+    async getGroups(page: number): Promise<Group[]> {
         let groups: Group[] = []
+        const response = await this.httpClient.get<GroupListResponse>('/groups.json', {
+            params: {
+                page: page
+            }
+        }).catch(() => {
+            throw new ConnectorError('Failed to retrieve list of groups')
+        })
 
-        while (hasMorePages) {
-            const response = await this.httpClient.get<GroupListResponse>('/groups.json', {
-                params: {
-                    page: page
-                }
-            }).catch(() => {
-                throw new ConnectorError('Failed to retrieve list of groups')
-            })
-
-            groups = groups.concat(response.data.groups);
-            response.data.groups.length > 0 ? page += 1 : hasMorePages = false
-        }
+        groups = groups.concat(response.data.groups);
 
         return groups
     }
