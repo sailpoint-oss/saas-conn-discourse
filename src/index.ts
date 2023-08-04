@@ -19,7 +19,13 @@ import {
     StdTestConnectionOutput,
     AttributeChangeOp,
     StdEntitlementListInput,
-    StdAccountListInput
+    StdAccountListInput,
+    StdAccountEnableInput,
+    StdAccountEnableOutput,
+    StdAccountDisableInput,
+    StdAccountDisableOutput,
+    StdAccountUnlockInput,
+    StdAccountUnlockOutput
 } from '@sailpoint/connector-sdk'
 import { DiscourseClient } from './discourse-client'
 import { User } from './model/user'
@@ -71,11 +77,40 @@ export const connector = async () => {
             logger.debug(user, 'discourse user found')
             res.send(util.userToAccount(user))
         })
-        .command("std:account:disable", async (context: Context, input: any, res: Response<any>) => {
+        .stdAccountEnable(async (context: Context, input: StdAccountEnableInput, res: Response<StdAccountEnableOutput>) => {
+            logger.debug(input, 'account enable input object')
+            const suspended = await discourseClient.unsuspendUser(input.identity)
+            const user = await discourseClient.getUser(input.identity)
+            if (suspended && user) {
+                res.send(util.userToAccount(user))
+            } else {
+                throw new ConnectorError('Failed to unsuspend user')
+            }
+        })
+        .stdAccountUnlock(async (context: Context, input: StdAccountUnlockInput, res: Response<StdAccountUnlockOutput>) => {
+            logger.debug(input, 'account unlock input object')
+            const user = await discourseClient.getUser(input.identity)
+            const resetPassword = await discourseClient.forgotPassword(user.username)
+            if (resetPassword && user) {
+                res.send(util.userToAccount(user))
+            } else {
+                throw new ConnectorError('Failed to send user password change email')
+            }
+        })
+        .stdAccountDisable(async (context: Context, input: StdAccountDisableInput, res: Response<StdAccountDisableOutput>) => {
             logger.debug(input, 'account disable input object')
             const user = await discourseClient.getUser(input.identity)
-            logger.debug(user, 'discourse user found')
-            res.send(util.userToAccount(user))
+            if (user.admin) {
+                await discourseClient.revokeAdmin(input.identity)
+            }
+            const suspended = await discourseClient.suspendUser(input.identity)
+            
+            if (suspended && user) {
+                res.send(util.userToAccount(user))
+            } else {
+                throw new ConnectorError('Failed to suspend user')
+            }
+            
         })
         .stdAccountUpdate(async (context: Context, input: StdAccountUpdateInput, res: Response<StdAccountUpdateOutput>) => {
             logger.debug(input, 'account update input object')
@@ -114,6 +149,10 @@ export const connector = async () => {
         })
         .stdAccountDelete(async (context: Context, input: StdAccountDeleteInput, res: Response<StdAccountDeleteOutput>) => {
             logger.debug(input, 'account delete input object')
+            const user = await discourseClient.getUser(input.identity)
+            if (user.admin) {
+                await discourseClient.revokeAdmin(input.identity)
+            }
             res.send(await discourseClient.deleteUser(input.identity))
         })
         .stdEntitlementList(async (context: Context, input: StdEntitlementListInput, res: Response<StdEntitlementListOutput>) => {
@@ -141,6 +180,3 @@ export const connector = async () => {
             res.send(util.groupToEntitlement(group))
         })
 }
-
-
-

@@ -1,5 +1,5 @@
 {
-	"name": "Discourse",
+	"name": "Discourse-v-2.0",
 	"commands": [
 		"std:test-connection",
 		"std:account:create",
@@ -13,35 +13,41 @@
 	],
 	"sourceConfig": [
 		{
-			"sectionTitle": "Base Configuration",
-			"type": "section",
+			"type": "menu",
+			"label": "Configuration",
 			"items": [
 				{
-					"key": "apiKey",
-					"type": "text",
-					"label": "API Key",
-					"required": true
-				},
-				{
-					"key": "apiUsername",
-					"type": "text",
-					"label": "API Username",
-					"required": true
-				},
-				{
-					"key": "baseUrl",
-					"type": "text",
-					"label": "Base URL",
-					"helpText": "Base URL of the Discourse instance",
-					"placeholder": "https://mydomain.com",
-					"required": true
-				},
-				{
-					"key": "primaryGroup",
-					"type": "text",
-					"label": "Primary Group",
-					"helpText": "The primary group that contains the users to be managed by this connector.",
-					"required": true
+					"sectionTitle": "Base Configuration",
+					"type": "section",
+					"items": [
+						{
+							"key": "apiKey",
+							"type": "text",
+							"label": "API Key",
+							"required": true
+						},
+						{
+							"key": "apiUsername",
+							"type": "text",
+							"label": "API Username",
+							"required": true
+						},
+						{
+							"key": "baseUrl",
+							"type": "text",
+							"label": "Base URL",
+							"helpText": "Base URL of the Discourse instance",
+							"placeholder": "https://mydomain.com",
+							"required": true
+						},
+						{
+							"key": "primaryGroup",
+							"type": "text",
+							"label": "Primary Group",
+							"helpText": "The primary group that contains the users to be managed by this connector.",
+							"required": true
+						}
+					]
 				}
 			]
 		}
@@ -100,15 +106,15 @@
 			]
 		}
 	],
-	"accountCreateTemplate":{
-		"fields":[
+	"accountCreateTemplate": {
+		"fields": [
 			{
 				"key": "email",
 				"label": "Email",
 				"type": "string",
 				"required": true,
 				"initialValue": {
-					"type":"identityAttribute",
+					"type": "identityAttribute",
 					"attributes": {
 						"name": "email"
 					}
@@ -120,7 +126,7 @@
 				"type": "string",
 				"required": true,
 				"initialValue": {
-					"type":"identityAttribute",
+					"type": "identityAttribute",
 					"attributes": {
 						"name": "uid"
 					}
@@ -134,7 +140,7 @@
 				"initialValue": {
 					"type": "generator",
 					"attributes": {
-					  "name": "Create Password"
+						"name": "Create Password"
 					}
 				}
 			},
@@ -144,7 +150,7 @@
 				"type": "string",
 				"required": false,
 				"initialValue": {
-					"type":"identityAttribute",
+					"type": "identityAttribute",
 					"attributes": {
 						"name": "jobTitle"
 					}

@@ -168,6 +168,80 @@ export class DiscourseClient {
         return true
     }
 
+    public async suspendUser(userId?: string): Promise<boolean> {
+        await this.httpClient.put<void>(`/admin/users/${userId}/suspend.json`, {
+            suspend_until: '9999-01-01',
+            reason: 'User is disabled in SailPoint IdentityNow'
+        }).catch((error: AxiosError) => {
+            if (error.response && error.response.status !== 422) {
+                throw new ConnectorError(error.message)
+            }
+        })
+        return true
+    }
+
+    public async revokeAdmin(userId?: string): Promise<boolean> {
+        await this.httpClient.put<void>(`/admin/users/${userId}/revoke_admin.json`, {
+        }).catch((error: AxiosError) => {
+            if (error.response && error.response.status !== 422) {
+                throw new ConnectorError(error.message)
+            }
+        })
+        return true
+    }
+
+    public async grantAdmin(userId?: string): Promise<boolean> {
+        await this.httpClient.put<void>(`/admin/users/${userId}/grant_admin.json`, {
+        }).catch((error: AxiosError) => {
+            if (error.response && error.response.status !== 422) {
+                throw new ConnectorError(error.message)
+            }
+        })
+        return true
+    }
+
+    public async revokeModerator(userId?: string): Promise<boolean> {
+        await this.httpClient.put<void>(`/admin/users/${userId}/revoke_moderation.json`, {
+        }).catch((error: AxiosError) => {
+            if (error.response && error.response.status !== 422) {
+                throw new ConnectorError(error.message)
+            }
+        })
+        return true
+    }
+
+    public async grantModerator(userId?: string): Promise<boolean> {
+        await this.httpClient.put<void>(`/admin/users/${userId}/grant_moderation.json`, {
+        }).catch((error: AxiosError) => {
+            if (error.response && error.response.status !== 422) {
+                throw new ConnectorError(error.message)
+            }
+        })
+        return true
+    }
+
+    public async unsuspendUser(userId?: string): Promise<boolean> {
+        await this.httpClient.put<void>(`/admin/users/${userId}/unsuspend.json`, {
+        }).catch((error: AxiosError) => {
+            if (error.response && error.response.status !== 422) {
+                throw new ConnectorError(error.message)
+            }
+        })
+        return true
+    }
+
+    public async forgotPassword(username?: string): Promise<boolean> {
+        await this.httpClient.put<void>(`/session/forgot_password.json`, {
+            login: username
+        }).catch((error: AxiosError) => {
+            if (error.response && error.response.status !== 422) {
+                throw new ConnectorError(error.message)
+            }
+        })
+        return true
+    }
+
+
     private async removeUserFromGroup(userId: string, groupId?: number): Promise<boolean> {
         await this.httpClient.delete<void>(`/admin/users/${userId}/groups/${groupId}`)
             .catch((error: AxiosError) => {
@@ -201,19 +275,63 @@ export class DiscourseClient {
             throw new ConnectorError('Failed to update user.')
         }
 
+        // If requested "staff" group then remove, not valid
+        origUser.groups = origUser.groups?.filter(group => {return group.name != 'staff' ? true : false })
         // Remove any groups that are not contained in the userUpdate object
         const origUserGroupIds = origUser.groups?.map(group => { return group.id })
+        // Remove staff as it is not a valid group to add
+        userUpdate.groups = userUpdate.groups?.filter(group => {return group.name != 'staff' ? true : false })
+        
+
+        // check for moderator group id
+        let moderatorGroup = userUpdate.groups?.filter(group => {return group.name == 'moderators' ? true : false })
+        let moderatorGroup2 = origUser.groups?.filter(group => {return group.name == 'moderators' ? true : false })
+        let moderatorId = -1
+        if (moderatorGroup && moderatorGroup.length > 0) {
+            moderatorId = moderatorGroup[0].id
+        }
+        if (moderatorGroup2 && moderatorGroup2.length > 0) {
+            moderatorId = moderatorGroup2[0].id
+        }
+
+        // check for admin group id
+        let adminGroup = userUpdate.groups?.filter(group => {return group.name == 'admins' ? true : false })
+        let adminGroup2 = origUser.groups?.filter(group => {return group.name == 'admins' ? true : false })
+        let adminId = -1
+        if (adminGroup && adminGroup.length > 0) {
+            adminId = adminGroup[0].id
+        }
+        if (adminGroup2 && adminGroup2.length > 0) {
+            adminId = adminGroup2[0].id
+        }
+
         const userUpdateGroupIds = userUpdate.groups?.map(group => { return group.id })
         if (origUserGroupIds && userUpdateGroupIds) {
             const groupsToRemove = origUserGroupIds.filter(x => !userUpdateGroupIds.includes(x))
             if (groupsToRemove != null && groupsToRemove.length > 0) {
-                await Promise.all(groupsToRemove.map(id => this.removeUserFromGroup(origUser.id.toString(), id)))
+                for (const group of groupsToRemove) {
+                    if (group == moderatorId) {
+                        await this.revokeModerator(origUser.id.toString())
+                    } else if (group == adminId) {
+                        await this.revokeAdmin(origUser.id.toString())
+                    } else {
+                        await this.removeUserFromGroup(origUser.id.toString(), group)
+                    } 
+                }
             }
 
             // Add any groups that are not contained in the origUser object
             const groupsToAdd = userUpdateGroupIds.filter(x => !origUserGroupIds.includes(x))
             if (groupsToAdd != null && groupsToAdd.length > 0) {
-                await Promise.all(groupsToAdd.map(id => this.addUserToGroup(id, username)))
+                for (const group of groupsToAdd) {
+                    if (group == moderatorId) {
+                        await this.grantModerator(origUser.id.toString())
+                    } else if (group == adminId) {
+                        await this.grantAdmin(origUser.id.toString())
+                    } else {
+                        await this.addUserToGroup(group, username)
+                    } 
+                }
             }
 
         }
