@@ -1,5 +1,5 @@
 {
-	"name": "Discourse-v-2.0",
+	"name": "discourse-connector",
 	"commands": [
 		"std:test-connection",
 		"std:account:create",
