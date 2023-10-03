@@ -18,8 +18,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - idn/**
   workflow_dispatch:
 
 
@@ -32,9 +30,14 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v3
         with:
-          node-version: "16"
+          node-version: "18"
+      # Checkout the master branch request to run rsync
+      - name: Checkout PR branch
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
       - name: Run npm install and build connector
-        id: buildSDK
+        id: buildConnector
         run: |
           npm install
           npm run pack-zip
