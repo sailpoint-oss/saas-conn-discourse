@@ -23,7 +23,7 @@ on:
   workflow_dispatch:
 
 
-  jobs:
+jobs:
   build_connector:
     name: Build the connector
     runs-on: ubuntu-latest
