@@ -1,0 +1,40 @@
+name: "build and push connector to S3 and dev tennant"
+
+env: 
+  JIRA_PROJECT: "DEVREL"
+  JIRA_COMPONENT: "Connectivity"
+  SLACK_CHANNEL: "#devrel-engineering"
+  CONNECTOR_NAME: "conn-discourse"
+
+
+  SAIL_BASEURL: ${{ secrets.CONN_SAIL_BASEURL }}
+  SAIL_TOKENURL: ${{ secrets.CONN_SAIL_TOKENURL }}
+  SAIL_CLIENTID: ${{ secrets.CONN_SAIL_CLIENTID }}
+  SAIL_CLIENTSECRET: ${{ secrets.CONN_SAIL_CLIENTSECRET }}
+
+  CONNECTOR_ALIAS: "DiscourseConnector"
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - idn/**
+  workflow_dispatch:
+
+
+  jobs:
+  build_connector:
+    name: Build the connector
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the master branch request to run rsync
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: "16"
+      - name: Run npm install and build connector
+        id: buildSDK
+        run: |
+          npm install
+          npm run pack-zip

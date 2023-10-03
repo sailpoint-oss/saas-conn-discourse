@@ -73,6 +73,11 @@
 				"description": "Email address of the account"
 			},
 			{
+				"name": "name",
+				"type": "string",
+				"description": "display name of the account"
+			},
+			{
 				"name": "title",
 				"type": "string",
 				"description": "The title of the user account"
@@ -129,6 +134,18 @@
 					"type": "identityAttribute",
 					"attributes": {
 						"name": "uid"
+					}
+				}
+			},
+			{
+				"key": "name",
+				"label": "Name",
+				"type": "string",
+				"required": true,
+				"initialValue": {
+					"type": "identityAttribute",
+					"attributes": {
+						"name": "displayName"
 					}
 				}
 			},
