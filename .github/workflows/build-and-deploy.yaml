@@ -17,7 +17,9 @@ env:
 on:
   push:
     branches:
-      - main
+      - main  # assuming you're using the 'main' branch; adjust if you use 'master' or another
+    paths:
+      - 'package.json'
   workflow_dispatch:
 
 
@@ -36,19 +38,33 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ github.ref }}
+      - name: Check version change
+        run: |
+          VERSION_CHANGED=$(git diff HEAD^ HEAD -- "package.json" | grep '\"version\"')
+          if [ -z "$VERSION_CHANGED" ]; then
+            echo "package.json version has not changed."
+            exit 1
+          fi
       - name: Run npm install and build connector
         id: buildConnector
         run: |
           npm install
           npm run pack-zip
-      - name: Configure AWS credentials from Test account
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{secrets.AWS_ACCESS_KEY_ID}}
-          aws-secret-access-key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
-          aws-region: us-east-1
-
-      # push these files to AWS
-      - name: Copy files to the test website with the AWS CLI:)
+      - name: Extract version from package.json
         run: |
-          aws s3 cp ./dist/discourse-connector-1.0.0.zip s3://spt-developer
+          echo "PACKAGE_VERSION=$(jq -r .version package.json)" >> $GITHUB_ENV
+      - name: Fetch pull requests
+        run: |
+          PR_LIST=$(gh pr list --base main --state merged --json title,number --limit 100 | jq -r '.[] | "- #" + (.number|tostring) + ": " + .title')
+          echo "PR_LIST=$PR_LIST" >> $GITHUB_ENV
+
+      - name: Create GitHub release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ env.PACKAGE_VERSION }}
+          release_name: Release v${{ env.PACKAGE_VERSION }}
+          body: |
+            ### Changes:
+            ${{ env.PR_LIST }}
