@@ -12,7 +12,7 @@ env:
   SAIL_CLIENTID: ${{ secrets.CONN_SAIL_CLIENTID }}
   SAIL_CLIENTSECRET: ${{ secrets.CONN_SAIL_CLIENTSECRET }}
 
-  CONNECTOR_ALIAS: "DiscourseConnector"
+  CONNECTOR_ALIAS: "discourse-connector"
 
 on:
   push:
@@ -58,6 +58,19 @@ jobs:
         run: |
           PR_LIST=$(gh pr list --base main --state merged --json title,number --limit 100 | jq -r '.[] | "- #" + (.number|tostring) + ": " + .title')
           echo "PR_LIST=$PR_LIST" >> $GITHUB_ENV
+
+      - name: Download sailpoint-cli package
+        run: |
+          wget https://github.com/sailpoint-oss/sailpoint-cli/releases/download/2.0/sail_2.0_linux_386.deb
+
+      - name: Install sailpoint-cli
+        run: |
+          sudo dpkg -i sail_2.0_linux_386.deb
+
+      - name: Use sailpoint-cli
+        run: |
+          sail conn list
+
 
       - name: Create GitHub release
         uses: actions/create-release@v1
