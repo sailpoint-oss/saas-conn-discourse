@@ -69,3 +69,8 @@ jobs:
           body: |
             ### Changes:
             ${{ env.PR_LIST }}
+      - name: Upload file to release
+        run: |
+          gh release upload v${{ env.PACKAGE_VERSION }} ./dist/discourse-connector-${{ env.PACKAGE_VERSION }}.zip --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
