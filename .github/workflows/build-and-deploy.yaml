@@ -74,15 +74,12 @@ jobs:
 
 
       - name: Create GitHub release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ env.PACKAGE_VERSION }}
-          release_name: Release v${{ env.PACKAGE_VERSION }}
-          body: |
-            ### Changes:
-            ${{ env.PR_LIST }}
+        run: |
+          gh release create v${{ env.PACKAGE_VERSION }} \
+            --title "Release v${{ env.PACKAGE_VERSION }}" \
+            --notes "### Changes:\n${{ env.PR_LIST }}" \
+            --target main \
+
       - name: Upload file to release
         run: |
           gh release upload v${{ env.PACKAGE_VERSION }} ./dist/${{ env.CONNECTOR_NAME }}-${{ env.PACKAGE_VERSION }}.zip --clobber
