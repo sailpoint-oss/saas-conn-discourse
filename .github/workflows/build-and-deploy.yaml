@@ -7,7 +7,7 @@ env:
   CONNECTOR_NAME: "conn-discourse"
 
 
-  SAIL_BASEURL: ${{ secrets.SDK_TEST_TENANT_BASE_URL }}
+  SAIL_BASE_URL: ${{ secrets.SDK_TEST_TENANT_BASE_URL }}
   SAIL_CLIENT_ID: ${{ secrets.SDK_TEST_TENANT_CLIENT_ID }}
   SAIL_CLIENT_SECRET: ${{ secrets.SDK_TEST_TENANT_CLIENT_SECRET }}
 
