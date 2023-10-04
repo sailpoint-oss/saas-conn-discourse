@@ -4,14 +4,15 @@ env:
   JIRA_PROJECT: "DEVREL"
   JIRA_COMPONENT: "Connectivity"
   SLACK_CHANNEL: "#devrel-engineering"
-  CONNECTOR_NAME: "conn-discourse"
+  
 
 
   SAIL_BASE_URL: ${{ secrets.SDK_TEST_TENANT_BASE_URL }}
   SAIL_CLIENT_ID: ${{ secrets.SDK_TEST_TENANT_CLIENT_ID }}
   SAIL_CLIENT_SECRET: ${{ secrets.SDK_TEST_TENANT_CLIENT_SECRET }}
-
-  CONNECTOR_ALIAS: "discourse-connector"
+  CONNECTOR_ALIAS: "discourse-github-build"
+  CLI_VERSION: "2.0"
+  
 
 on:
   push:
@@ -53,6 +54,7 @@ jobs:
       - name: Extract version from package.json
         run: |
           echo "PACKAGE_VERSION=$(jq -r .version package.json)" >> $GITHUB_ENV
+          echo "CONNECTOR_NAME=$(jq -r .name package.json)" >> $GITHUB_ENV
       - name: Fetch pull requests
         run: |
           PR_LIST=$(gh pr list --base main --state merged --json title,number --limit 100 | jq -r '.[] | "- #" + (.number|tostring) + ": " + .title')
@@ -60,15 +62,15 @@ jobs:
 
       - name: Download sailpoint-cli package
         run: |
-          wget https://github.com/sailpoint-oss/sailpoint-cli/releases/download/2.0/sail_2.0_linux_amd64.deb
+          wget https://github.com/sailpoint-oss/sailpoint-cli/releases/download/2.0/sail_${{ env.CLI_VERSION }}_linux_amd64.deb
 
       - name: Install sailpoint-cli
         run: |
-          sudo dpkg -i sail_2.0_linux_amd64.deb
+          sudo dpkg -i sail_${{ env.CLI_VERSION }}_linux_amd64.deb
 
-      - name: Use sailpoint-cli
+      - name: Use sailpoint-cli to upload new connector
         run: |
-          sail conn list
+          sail conn upload -c "${{ env.CONNECTOR_ALIAS }}" -f ./dist/${{ env.CONNECTOR_NAME }}-${{ env.PACKAGE_VERSION }}.zip
 
 
       - name: Create GitHub release
@@ -83,6 +85,6 @@ jobs:
             ${{ env.PR_LIST }}
       - name: Upload file to release
         run: |
-          gh release upload v${{ env.PACKAGE_VERSION }} ./dist/discourse-connector-${{ env.PACKAGE_VERSION }}.zip --clobber
+          gh release upload v${{ env.PACKAGE_VERSION }} ./dist/${{ env.CONNECTOR_NAME }}-${{ env.PACKAGE_VERSION }}.zip --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
