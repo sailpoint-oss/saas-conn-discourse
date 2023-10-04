@@ -79,6 +79,8 @@ jobs:
             --title "Release v${{ env.PACKAGE_VERSION }}" \
             --notes "### Changes:\n${{ env.PR_LIST }}" \
             --target main \
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload file to release
         run: |
