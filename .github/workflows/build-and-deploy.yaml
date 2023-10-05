@@ -55,10 +55,10 @@ jobs:
         run: |
           echo "PACKAGE_VERSION=$(jq -r .version package.json)" >> $GITHUB_ENV
           echo "CONNECTOR_NAME=$(jq -r .name package.json)" >> $GITHUB_ENV
-      - name: Fetch pull requests
-        run: |
-          PR_LIST=$(gh pr list --base main --state merged --json title,number --limit 100 | jq -r '.[] | "- #" + (.number|tostring) + ": " + .title')
-          echo "PR_LIST=$PR_LIST" >> $GITHUB_ENV
+
+      - name: Get Commits since last Release
+        id: changes
+        uses: simbo/changes-since-last-release-action@v1
 
       - name: Download sailpoint-cli package
         run: |
@@ -77,7 +77,7 @@ jobs:
         run: |
           gh release create v${{ env.PACKAGE_VERSION }} \
             --title "Release v${{ env.PACKAGE_VERSION }}" \
-            --notes "### Changes:\n${{ env.PR_LIST }}" \
+            --notes "### Changes since ${{ steps.changes.outputs.last-tag }}: \n ${{ steps.changes.outputs.log }}" \
             --target main \
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -102,6 +102,6 @@ jobs:
           issuetype: Story
           summary: Build completed for ${{ github.repository }} for version ${{ env.PACKAGE_VERSION }}
           description: Build completed for ${{ github.repository }} for version ${{ env.PACKAGE_VERSION }}
-          fields: '{"Components": "Connectivity"}'
+          fields: '{"components": [{"add": {"name": "Connectivity"}}]}}'
       - name: Log created issue
         run: echo "Issue ${{ steps.create.outputs.issue }} was created"
