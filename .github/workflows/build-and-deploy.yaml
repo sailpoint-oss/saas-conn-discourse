@@ -87,3 +87,21 @@ jobs:
           gh release upload v${{ env.PACKAGE_VERSION }} ./dist/${{ env.CONNECTOR_NAME }}-${{ env.PACKAGE_VERSION }}.zip --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Login to Jira
+        uses: atlassian/gajira-login@v3
+        env:
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+      - name: Ticket for new release
+        id: create
+        uses: atlassian/gajira-create@v3
+        with:
+          project: ${{ env.JIRA_PROJECT }}
+          issuetype: Story
+          summary: Build completed for ${{ github.repository }} for version ${{ env.PACKAGE_VERSION }}
+          description: Build completed for ${{ github.repository }} for version ${{ env.PACKAGE_VERSION }}
+          fields: '{"Components": "Connectivity"}'
+      - name: Log created issue
+        run: echo "Issue ${{ steps.create.outputs.issue }} was created"
