@@ -77,7 +77,7 @@ jobs:
         run: |
           gh release create v${{ env.PACKAGE_VERSION }} \
             --title "Release v${{ env.PACKAGE_VERSION }}" \
-            --notes "### Changes since ${{ steps.changes.outputs.last-tag }}: \n ${{ steps.changes.outputs.log }}" \
+            --notes "### Changes since ${{ steps.changes.outputs.last-tag }}: \r\n ${{ steps.changes.outputs.log }}" \
             --target main \
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -102,6 +102,6 @@ jobs:
           issuetype: Story
           summary: Build completed for ${{ github.repository }} for version ${{ env.PACKAGE_VERSION }}
           description: Build completed for ${{ github.repository }} for version ${{ env.PACKAGE_VERSION }}
-          fields: '{"components": [{"add": {"name": "Connectivity"}}]}}'
+          fields: '{"components": [{"add": {"name": "Connectivity"}}]}'
       - name: Log created issue
         run: echo "Issue ${{ steps.create.outputs.issue }} was created"
