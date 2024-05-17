@@ -10,7 +10,7 @@ export class Util {
      * @param {StdAccountCreateInput} input Account Create Input from IDN
      * @returns {User} User object
      */
-    public accountToUser(input: StdAccountCreateInput): User {
+    public accountToUser(input: StdAccountCreateInput, employeeIdField: string | undefined): User {
         if (input.attributes.username == null) {
             throw new ConnectorError(`'username' is required to create user`)
         }
@@ -49,6 +49,12 @@ export class Util {
         user.title = input.attributes.title
         user.password = input.attributes.password
         user.groups = userGroups
+        user.user_fields = {}
+        user.name = input.attributes.name
+        
+        if (employeeIdField !== undefined) {
+            user.user_fields[employeeIdField] = input.attributes.employeeId
+        }
     
         return user
     }
@@ -59,7 +65,7 @@ export class Util {
      * @param {User} user User object
      * @returns {StdAccountCreateOutput} IDN account create object
      */
-    public userToAccount(user: User): StdAccountCreateOutput {
+    public userToAccount(user: User, employeeIdField: string | undefined): StdAccountCreateOutput {
         return {
             // Convert id to string because IDN doesn't work well with number types for the account ID
             identity: user.id ? user.id.toString() : '',
@@ -71,7 +77,9 @@ export class Util {
                 id: user.id ? user.id.toString() : '',
                 email: user.email ? user.email : '',
                 title: user.title ? user.title : '',
-                groups: user.groups ? user.groups.map(group => { return `${group.id}:${group.name}` }) : null
+                employeeId: employeeIdField !== undefined && user.user_fields !== undefined ? user.user_fields[employeeIdField] : null,
+                groups: user.groups ? user.groups.map(group => { return `${group.id}:${group.name}` }) : null,
+                name: user.name ? user.name : ''
             }
         }
     }

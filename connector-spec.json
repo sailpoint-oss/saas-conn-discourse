@@ -46,6 +46,13 @@
 							"label": "Primary Group",
 							"helpText": "The primary group that contains the users to be managed by this connector.",
 							"required": true
+						},
+						{
+							"key": "employeeIdFieldId",
+							"type": "text",
+							"label": "Employee Id Field Id",
+							"helpText": "The id of the employee Id field in the Discourse custom fields table",
+							"required": true
 						}
 					]
 				}
@@ -61,6 +68,11 @@
 				"name": "username",
 				"type": "string",
 				"description": "The username of the account"
+			},
+			{
+				"name": "employeeId",
+				"type": "string",
+				"description": "The internal employee ID of the account used for correlation with internal hr systems"
 			},
 			{
 				"name": "id",
@@ -122,6 +134,18 @@
 					"type": "identityAttribute",
 					"attributes": {
 						"name": "email"
+					}
+				}
+			},
+			{
+				"key": "employeeId",
+				"label": "Employee ID",
+				"type": "string",
+				"required": true,
+				"initialValue": {
+					"type": "identityAttribute",
+					"attributes": {
+						"name": "employeeID"
 					}
 				}
 			},

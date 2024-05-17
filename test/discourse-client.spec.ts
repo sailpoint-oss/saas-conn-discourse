@@ -3,7 +3,7 @@ import { InvalidConfigurationError } from '../src/errors/invalid-configuration-e
 import { DiscourseClient } from '../src/discourse-client'
 
 jest.mock('../src/http/axios-wrapper')
-const discourseClient = new DiscourseClient({ apiKey: 'company', apiUsername: 'apiKey', baseUrl: 'baseUrl', primaryGroup: 'group' })
+const discourseClient = new DiscourseClient({ apiKey: 'company', apiUsername: 'apiKey', baseUrl: 'baseUrl', primaryGroup: 'group',  employeeIdFieldId: '1'})
 
 
 describe('test happy paths', () => {

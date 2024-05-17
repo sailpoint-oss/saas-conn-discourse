@@ -73,4 +73,13 @@ export class AxiosWrapper implements HTTP {
             );
         });
     }
+    async putFormData<T = any>(url: string, data?: any, headers?: any) {
+        const response = { ...dummyResponse };
+        response.data = userUpdateResponse
+        return new Promise((resolve) => {
+            process.nextTick(() =>
+                resolve(response)
+            );
+        });
+    }
 }

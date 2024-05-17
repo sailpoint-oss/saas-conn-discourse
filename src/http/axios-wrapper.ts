@@ -55,4 +55,12 @@ export class AxiosWrapper implements HTTP {
         return this.httpClient.put<T>(url, data);
     }
 
+    async putFormData<T = any>(url: string, data?: any, headers?: any) {
+        const formData = new URLSearchParams();
+        for (const key in data) {
+            formData.append(key, data[key]);
+        }
+        return this.httpClient.put<T>(url, formData.toString(), {headers: headers});
+    }
+
 }

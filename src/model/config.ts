@@ -5,5 +5,6 @@
     apiKey?: string 
     apiUsername?: string 
     baseUrl?: string
-    primaryGroup?: string 
+    primaryGroup?: string
+    employeeIdFieldId?: string
  }

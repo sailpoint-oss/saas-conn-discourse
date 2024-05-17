@@ -9,4 +9,5 @@ export interface HTTP {
 
     put<T = any>(url: string, data?: any): any
 
+    putFormData<T = any>(url: string, data?: any, headers?: any) : any
 }

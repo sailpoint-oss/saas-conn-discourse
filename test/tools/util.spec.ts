@@ -14,12 +14,13 @@ describe('test happy paths', () => {
             ],
             "email": "test@test.com",
             "title":"title",
-            "password": "password"
+            "password": "password",
+            "employeeId": "1234"
         },
         "identity": "identity"
     }
 
-    const res = util.accountToUser(userGroup)
+    const res = util.accountToUser(userGroup, '4')
 
     expect(res.email).toStrictEqual("test@test.com")
   })

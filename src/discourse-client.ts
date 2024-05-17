@@ -24,6 +24,7 @@ export class DiscourseClient {
     private readonly apiUsername?: string
     private readonly baseUrl?: string
     private readonly primaryGroup: string
+    private readonly employeeIdFieldId: string
     httpClient: HTTP;
 
     constructor(config: Config) {
@@ -49,6 +50,12 @@ export class DiscourseClient {
             this.primaryGroup = config.primaryGroup
         }
 
+        if (config.employeeIdFieldId == undefined) {
+            throw new InvalidConfigurationError('employeeIdFieldId must be provided from config')
+        } else {
+            this.employeeIdFieldId = config.employeeIdFieldId
+        }
+
         this.httpClient = HTTPFactory.getHTTP(config);
     }
 
@@ -72,11 +79,12 @@ export class DiscourseClient {
      */
     async createUser(user: User): Promise<User> {
         await this.httpClient.post<void>('/users.json', {
-            name: user.username, // name doesn't work in discourse, so just use username
+            name: user.name, // name doesn't work in discourse, so just use username
             email: user.email,
             password: user.password != null ? user.password : this.generateRandomPassword(),
             username: user.username,
             active: true,
+            user_fields: user.user_fields,
             approved: true
         }).catch((error: unknown) => {
             throw new ConnectorError(`Failed to create user ${user.username}: ${error}`)
@@ -253,6 +261,12 @@ export class DiscourseClient {
         return true
     }
 
+    async updateUserEmail(userId: string, email: string): Promise<boolean> {
+        const data = { email: email};
+        const headers = { 'Content-Type': 'application/x-www-form-urlencoded' }
+        await this.httpClient.putFormData<void>(`/u/${userId}/preferences/email`, data, headers);
+        return true
+    }
 
     /**
      * update a user by username.
@@ -263,16 +277,14 @@ export class DiscourseClient {
      */
     async updateUser(origUser: User, newUser: User, username?: string): Promise<User> {
         const userUpdate = UserUpdate.fromUser(newUser)
-        const data = new FormData()
-        for (const [key, value] of Object.entries(userUpdate)) {
-            if (key !== 'groups' && value != null) {
-                data.append(key, value)
-            }
-        }
 
         const response = await this.httpClient.put<UserUpdateResponse>(`/u/${username}.json`, userUpdate)
         if (response.data.user == null) {
             throw new ConnectorError('Failed to update user.')
+        }
+
+        if(origUser.email != newUser.email && newUser.email && origUser.username) {
+            await this.updateUserEmail(origUser.username, newUser.email)
         }
 
         // If requested "staff" group then remove, not valid
@@ -284,8 +296,8 @@ export class DiscourseClient {
         
 
         // check for moderator group id
-        let moderatorGroup = userUpdate.groups?.filter(group => {return group.name == 'moderators' ? true : false })
-        let moderatorGroup2 = origUser.groups?.filter(group => {return group.name == 'moderators' ? true : false })
+        const moderatorGroup = userUpdate.groups?.filter(group => {return group.name == 'moderators' ? true : false })
+        const moderatorGroup2 = origUser.groups?.filter(group => {return group.name == 'moderators' ? true : false })
         let moderatorId = -1
         if (moderatorGroup && moderatorGroup.length > 0) {
             moderatorId = moderatorGroup[0].id
@@ -295,8 +307,8 @@ export class DiscourseClient {
         }
 
         // check for admin group id
-        let adminGroup = userUpdate.groups?.filter(group => {return group.name == 'admins' ? true : false })
-        let adminGroup2 = origUser.groups?.filter(group => {return group.name == 'admins' ? true : false })
+        const adminGroup = userUpdate.groups?.filter(group => {return group.name == 'admins' ? true : false })
+        const adminGroup2 = origUser.groups?.filter(group => {return group.name == 'admins' ? true : false })
         let adminId = -1
         if (adminGroup && adminGroup.length > 0) {
             adminId = adminGroup[0].id
