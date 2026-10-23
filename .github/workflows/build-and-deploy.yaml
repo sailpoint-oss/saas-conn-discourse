@@ -77,10 +77,12 @@ jobs:
         run: |
           gh release create v${{ env.PACKAGE_VERSION }} \
             --title "Release v${{ env.PACKAGE_VERSION }}" \
-            --notes "${{ steps.changes.outputs.log }}" \
+            --notes "$RELEASE_NOTES" \
             --target main \
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Pass commit log as data, never interpolate it into shell source
+          RELEASE_NOTES: ${{ steps.changes.outputs.log }}
 
       - name: Upload file to release
         run: |
