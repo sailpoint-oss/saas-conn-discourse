@@ -1,18 +1,12 @@
 name: "build and push connector to S3 and dev tennant"
 
-env: 
+env:
   JIRA_PROJECT: "DEVREL"
   JIRA_COMPONENT: "Connectivity"
   SLACK_CHANNEL: "#devrel-engineering"
-  
-
-
-  SAIL_BASE_URL: ${{ secrets.SDK_TEST_TENANT_BASE_URL }}
-  SAIL_CLIENT_ID: ${{ secrets.SDK_TEST_TENANT_CLIENT_ID }}
-  SAIL_CLIENT_SECRET: ${{ secrets.SDK_TEST_TENANT_CLIENT_SECRET }}
   CONNECTOR_ALIAS: "discourse-github-build"
   CLI_VERSION: "2.0"
-  
+
 
 on:
   push:
@@ -22,23 +16,30 @@ on:
       - 'package.json'
   workflow_dispatch:
 
+# No default token permissions; each job opts in to only what it needs
+permissions: {}
 
 jobs:
+  # Runs npm install and the build with no secrets and a read-only token
   build_connector:
     name: Build the connector
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+      name: ${{ steps.meta.outputs.name }}
     steps:
-      # Checkout the master branch request to run rsync
       - name: Set up Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "18"
-      # Checkout the master branch request to run rsync
       - name: Checkout PR branch
-        uses: actions/checkout@v3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
+          persist-credentials: false
       - name: Check version change
         run: |
           VERSION_CHANGED=$(git diff HEAD^ HEAD -- "package.json" | grep '\"version\"')
@@ -52,57 +53,112 @@ jobs:
           npm install
           npm run pack-zip
       - name: Extract version from package.json
+        id: meta
         run: |
-          echo "PACKAGE_VERSION=$(jq -r .version package.json)" >> $GITHUB_ENV
-          echo "CONNECTOR_NAME=$(jq -r .name package.json)" >> $GITHUB_ENV
+          echo "version=$(jq -r .version package.json)" >> "$GITHUB_OUTPUT"
+          echo "name=$(jq -r .name package.json)" >> "$GITHUB_OUTPUT"
+      - name: Upload connector zip
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: connector-zip
+          path: dist/${{ steps.meta.outputs.name }}-${{ steps.meta.outputs.version }}.zip
+          if-no-files-found: error
+          retention-days: 1
 
-      - name: Get Commits since last Release
-        id: changes
-        uses: simbo/changes-since-last-release-action@v1
-
+  # Only job with the tenant credentials
+  deploy_connector:
+    name: Upload connector to tenant
+    needs: build_connector
+    runs-on: ubuntu-latest
+    permissions: {}
+    env:
+      PACKAGE_VERSION: ${{ needs.build_connector.outputs.version }}
+      CONNECTOR_NAME: ${{ needs.build_connector.outputs.name }}
+    steps:
+      - name: Download connector zip
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: connector-zip
+          path: dist
       - name: Download sailpoint-cli package
         run: |
-          wget https://github.com/sailpoint-oss/sailpoint-cli/releases/download/2.0/sail_${{ env.CLI_VERSION }}_linux_amd64.deb
-
+          wget "https://github.com/sailpoint-oss/sailpoint-cli/releases/download/${CLI_VERSION}/sail_${CLI_VERSION}_linux_amd64.deb"
       - name: Install sailpoint-cli
         run: |
-          sudo dpkg -i sail_${{ env.CLI_VERSION }}_linux_amd64.deb
-
+          sudo dpkg -i "sail_${CLI_VERSION}_linux_amd64.deb"
       - name: Use sailpoint-cli to upload new connector
+        env:
+          SAIL_BASE_URL: ${{ secrets.SDK_TEST_TENANT_BASE_URL }}
+          SAIL_CLIENT_ID: ${{ secrets.SDK_TEST_TENANT_CLIENT_ID }}
+          SAIL_CLIENT_SECRET: ${{ secrets.SDK_TEST_TENANT_CLIENT_SECRET }}
         run: |
-          sail conn upload -c "${{ env.CONNECTOR_ALIAS }}" -f ./dist/${{ env.CONNECTOR_NAME }}-${{ env.PACKAGE_VERSION }}.zip
+          sail conn upload -c "$CONNECTOR_ALIAS" -f "./dist/${CONNECTOR_NAME}-${PACKAGE_VERSION}.zip"
 
-
+  # Only job with a write token
+  create_release:
+    name: Create GitHub release
+    needs: [build_connector, deploy_connector]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      PACKAGE_VERSION: ${{ needs.build_connector.outputs.version }}
+      CONNECTOR_NAME: ${{ needs.build_connector.outputs.name }}
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Get Commits since last Release
+        id: changes
+        uses: simbo/changes-since-last-release-action@45883b23a1c40599d6967b447b919a5663aaf23d # v1.0.1
+      - name: Download connector zip
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: connector-zip
+          path: dist
       - name: Create GitHub release
         run: |
-          gh release create v${{ env.PACKAGE_VERSION }} \
-            --title "Release v${{ env.PACKAGE_VERSION }}" \
+          gh release create "v${PACKAGE_VERSION}" \
+            --title "Release v${PACKAGE_VERSION}" \
             --notes "$RELEASE_NOTES" \
-            --target main \
+            --target main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Pass commit log as data, never interpolate it into shell source
           RELEASE_NOTES: ${{ steps.changes.outputs.log }}
-
       - name: Upload file to release
         run: |
-          gh release upload v${{ env.PACKAGE_VERSION }} ./dist/${{ env.CONNECTOR_NAME }}-${{ env.PACKAGE_VERSION }}.zip --clobber
+          gh release upload "v${PACKAGE_VERSION}" "./dist/${CONNECTOR_NAME}-${PACKAGE_VERSION}.zip" --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  # Only job with the Jira credentials; login and create must share a job
+  jira_ticket:
+    name: Create Jira ticket
+    needs: [build_connector, create_release]
+    runs-on: ubuntu-latest
+    permissions: {}
+    env:
+      PACKAGE_VERSION: ${{ needs.build_connector.outputs.version }}
+    steps:
       - name: Login to Jira
-        uses: atlassian/gajira-login@v3
+        uses: atlassian/gajira-login@45fd029b9f1d6d8926c6f04175aa80c0e42c9026 # v3.0.1
         env:
           JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
           JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
           JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
       - name: Ticket for new release
         id: create
-        uses: atlassian/gajira-create@v3
+        uses: atlassian/gajira-create@59e177c4f6451399df5b4911c2211104f171e669 # v3.0.1
         with:
           project: ${{ env.JIRA_PROJECT }}
           issuetype: Story
           summary: Build completed for ${{ github.repository }} for version ${{ env.PACKAGE_VERSION }}
           description: Build completed for ${{ github.repository }} for version ${{ env.PACKAGE_VERSION }}
       - name: Log created issue
-        run: echo "Issue ${{ steps.create.outputs.issue }} was created"
+        env:
+          ISSUE_KEY: ${{ steps.create.outputs.issue }}
+        run: echo "Issue $ISSUE_KEY was created"
