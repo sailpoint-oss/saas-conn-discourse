@@ -124,9 +124,14 @@ jobs:
           path: dist
       - name: Create GitHub release
         run: |
+          # The changes action escapes newlines as %0A; decode them back
+          nl=$'\n'; cr=$'\r'; pct='%'
+          NOTES="${RELEASE_NOTES//'%0A'/$nl}"
+          NOTES="${NOTES//'%0D'/$cr}"
+          NOTES="${NOTES//'%25'/$pct}"
           gh release create "v${PACKAGE_VERSION}" \
             --title "Release v${PACKAGE_VERSION}" \
-            --notes "$RELEASE_NOTES" \
+            --notes "$NOTES" \
             --target main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
