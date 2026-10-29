@@ -9,6 +9,9 @@ env:
 
 
 on:
+  pull_request:  # TEMP: test the full pipeline on the PR; remove before merging
+    paths:
+      - 'package.json'
   push:
     branches:
       - main  # assuming you're using the 'main' branch; adjust if you use 'master' or another
